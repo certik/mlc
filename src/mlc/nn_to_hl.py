@@ -65,8 +65,7 @@ class NNToHLVisitor:
 
         self.kernel_counter += 1
         kernel = hlir.Array("Kernel%d" % self.kernel_counter, 2,
-                            (x.out_channels, x.in_channels,
-                                x.kernel_size, x.kernel_size))
+                            (x.kernel_size, x.kernel_size, x.in_channels, x.out_channels))
         self.hl = hlir.Operation("Conv2D", len(new_shape),
                     shape=new_shape,
                     args=(self.hl, kernel))
