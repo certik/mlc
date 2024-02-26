@@ -15,12 +15,12 @@ class NNToHLVisitor:
         self.weight_counter = 0
 
     def visit(self, x):
-        if isinstance(x, nnir.Sequential):
-            self.visit_Sequential(x)
-        elif isinstance(x, nnir.Linear):
-            self.visit_Linear(x)
+        supported_nodes = ["Sequential", "Linear"]
+        node_name = type(x).__name__
+        if node_name in supported_nodes:
+            eval("self.visit_%s(x)" % node_name)
         else:
-            raise Exception("Unsupported NN IR node: %s" % type(x).__name__)
+            raise Exception("Unsupported NN IR node: %s" % node_name)
 
     def visit_Linear(self, x: nnir.Linear):
         assert x.bias == False
