@@ -27,7 +27,7 @@ class NNToHLVisitor:
 
     def visit(self, x):
         supported_nodes = ["Sequential", "Linear", "Conv2D", "ReLU", "Softmax",
-                            "MaxPool2D", "Transpose", "Flatten"]
+                            "MaxPool2D", "Transpose", "Flatten", "BatchNorm2D"]
         node_name = type(x).__name__
         if node_name in supported_nodes:
             eval("self.visit_%s(x)" % node_name)
@@ -94,6 +94,12 @@ class NNToHLVisitor:
         new_shape[1] //= 2
         self.hl = hlir.Operation("MaxPool2D", self.hl.rank,
                     shape=new_shape,
+                    args=(self.hl,))
+
+    def visit_BatchNorm2D(self, x: nnir.BatchNorm2D):
+        assert self.hl.rank >= 2
+        self.hl = hlir.Operation("BatchNorm2D", self.hl.rank,
+                    shape=self.hl.shape,
                     args=(self.hl,))
 
     def visit_Transpose(self, x: nnir.Transpose):
