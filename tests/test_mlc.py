@@ -1,9 +1,12 @@
 from mlc.nnir import (Conv2D, ReLU, BatchNorm2D, MaxPool2D,
         Flatten, Linear, Sequential)
-from mlc.hlir import Operation
+from mlc.hlir import Operation, Array
+from mlc.nn_to_hl import nn_to_hl
 
 def test_op():
-    o = Operation("matmul", 2, [100, 200])
+    A = Array(2, (100, 5))
+    B = Array(2, (5, 200))
+    o = Operation("matmul", 2, (100, 200), (A, B))
     print(o)
 
 def test_linear():
@@ -12,6 +15,9 @@ def test_linear():
         Linear(2048, 768, bias=False)
         ])
     print(layers)
+    hl = nn_to_hl(layers, in_shape=(100,256))
+    print(hl)
+    assert hl.shape == (100, 768)
 
 def test_beautiful_mnist():
     layers = Sequential([

@@ -8,7 +8,13 @@ from typing import Any
 # a given array is stored.
 
 @dataclass
+class Array:
+    rank: int
+    shape: list[int]
+
+@dataclass
 class Operation:
     op_type: str
     rank: int
     shape: list[int]
+    args: list[Any]
