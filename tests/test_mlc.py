@@ -1,5 +1,6 @@
-from mlc.model import (Operation, Conv2D, ReLU, BatchNorm2D, MaxPool2D,
+from mlc.nnir import (Conv2D, ReLU, BatchNorm2D, MaxPool2D,
         Flatten, Linear, Sequential)
+from mlc.hlir import Operation
 
 def test_op():
     o = Operation("matmul", 2, [100, 200])
