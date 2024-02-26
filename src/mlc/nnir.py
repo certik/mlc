@@ -70,6 +70,11 @@ class Flatten:
     start_dim: int
     end_dim: int
 
+# Note: This node is not in torch.nn
+@dataclass
+class Transpose:
+    permutation: list[int]
+
 ## Transformers
 
 @dataclass
