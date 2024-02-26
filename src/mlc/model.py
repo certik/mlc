@@ -1,6 +1,100 @@
 from dataclasses import dataclass
+from typing import Any
 
-# High Level IR
+################################################################################
+
+# Machine Learning IR
+
+# Basic building blocks for graphs.
+# These nodes correspond to
+# * https://pytorch.org/docs/stable/nn.html
+# * https://www.tensorflow.org/api_docs/python/tf/keras/
+#
+# These nodes express the high-level neural network nodes, they do not contain
+# any array specific details.
+
+## Linear Layers
+
+@dataclass
+class Linear:
+    in_features: int
+    out_features: int
+    bias: bool
+
+## Convolution Layers
+
+@dataclass
+class Conv2D:
+    in_channels: int
+    out_channels: int
+    kernel_size: int
+    bias: bool
+
+## Pooling Layers
+
+@dataclass
+class MaxPool2D:
+    kernel_size: list[int]
+
+## Normalization Layers
+
+@dataclass
+class BatchNorm2D:
+    num_features: int
+
+@dataclass
+class GroupNorm:
+    num_groups: int
+    num_channels: int
+
+## Non-linear Activations
+
+@dataclass
+class ReLU:
+    pass
+
+@dataclass
+class Softmax:
+    pass
+
+@dataclass
+class Tanh:
+    pass
+
+@dataclass
+class Sigmoid:
+    pass
+
+## Utilities
+
+@dataclass
+class Flatten:
+    start_dim: int
+    end_dim: int
+
+## Transformers
+
+@dataclass
+class Transformer:
+    d_model: int
+    nhead: int
+    num_encoder_layers: int
+    num_decoder_layers: int
+    dim_feedforward: int
+
+## Containers
+
+@dataclass
+class Sequential:
+    layers: list[Any]
+
+################################################################################
+
+# High-Level Array IR
+
+# Represents all array operations using a complete high level semantics.
+# Does not contain details about how and where operations are executed or where
+# a given array is stored.
 
 @dataclass
 class Operation:
