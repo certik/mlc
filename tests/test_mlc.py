@@ -4,8 +4,8 @@ from mlc.hlir import Operation, Array
 from mlc.nn_to_hl import nn_to_hl
 
 def test_op():
-    A = Array(2, (100, 5))
-    B = Array(2, (5, 200))
+    A = Array("A", 2, (100, 5))
+    B = Array("B", 2, (5, 200))
     o = Operation("matmul", 2, (100, 200), (A, B))
     print(o)
 

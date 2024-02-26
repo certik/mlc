@@ -11,8 +11,8 @@ def create_matmul(A, B):
 class NNToHLVisitor:
 
     def __init__(self, in_shape):
-        self.hl = None
-        self.in_shape = in_shape
+        self.hl = hlir.Array("Input", 2, in_shape)
+        self.weight_counter = 0
 
     def visit(self, x):
         if isinstance(x, nnir.Sequential):
@@ -24,11 +24,12 @@ class NNToHLVisitor:
 
     def visit_Linear(self, x: nnir.Linear):
         assert x.bias == False
-        weight = hlir.Array(2, (x.in_features, x.out_features))
+        self.weight_counter += 1
+        weight = hlir.Array("Weight%d" % self.weight_counter, 2,
+                            (x.in_features, x.out_features))
         self.hl = create_matmul(self.hl, weight)
 
     def visit_Sequential(self, x: nnir.Sequential):
-        self.hl = hlir.Array(2, self.in_shape)
         for layer in x.layers:
             self.visit(layer)
 
