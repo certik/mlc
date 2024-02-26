@@ -9,6 +9,7 @@ from typing import Any
 
 @dataclass
 class Array:
+    name: str
     rank: int
     shape: list[int]
 
