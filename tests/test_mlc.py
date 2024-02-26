@@ -49,3 +49,7 @@ def test_beautiful_mnist():
       BatchNorm2D(64), MaxPool2D((2,2)),
       Flatten(1, -1), Linear(576, 10, bias=False)])
     print(layers)
+
+    hl = nn_to_hl(layers, in_shape=(28,28))
+    print(hl)
+    assert hl.shape == (10,)
