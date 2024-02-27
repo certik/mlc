@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum, auto
 from typing import Any
 
 # High-Level (Array) IR (HLIR)
@@ -22,9 +23,16 @@ from typing import Any
 # or a separate representation) we lower these operation by providing an actual
 # implementation or a specific backend API (kernel) call.
 
+class Type(Enum):
+    f8 = auto()
+    f16 = auto()
+    f32 = auto()
+    f64 = auto()
+
 @dataclass
 class Array:
     name: str
+    type: Type
     rank: int
     shape: list[int]
 

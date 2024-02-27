@@ -21,7 +21,7 @@ def create_matmul(A, B):
 class NNToHLVisitor:
 
     def __init__(self, in_shape):
-        self.hl = hlir.Array("Input", len(in_shape), in_shape)
+        self.hl = hlir.Array("Input", hlir.Type.f32, len(in_shape), in_shape)
         self.conv_counter = 0
         self.linear_counter = 0
 
@@ -36,12 +36,12 @@ class NNToHLVisitor:
 
     def visit_Linear(self, x: nnir.Linear):
         self.linear_counter += 1
-        weight = hlir.Array("linear_w%d" % self.linear_counter, 2,
-                            (x.in_features, x.out_features))
+        weight = hlir.Array("linear_w%d" % self.linear_counter, hlir.Type.f32,
+                            2, (x.in_features, x.out_features))
         self.hl = create_matmul(self.hl, weight)
         if x.bias:
-            bias = hlir.Array("linear_b%d" % self.linear_counter, self.hl.rank,
-                            self.hl.shape)
+            bias = hlir.Array("linear_b%d" % self.linear_counter, hlir.Type.f32,
+                            self.hl.rank, self.hl.shape)
             self.hl = hlir.Operation("Add", self.hl.rank,
                             self.hl.shape,
                             args=(self.hl, bias))
@@ -64,14 +64,14 @@ class NNToHLVisitor:
             new_shape[2] = x.out_channels
 
         self.conv_counter += 1
-        kernel = hlir.Array("conv_kernel%d" % self.conv_counter, 2,
-                            (x.kernel_size, x.kernel_size, x.in_channels, x.out_channels))
+        kernel = hlir.Array("conv_kernel%d" % self.conv_counter, hlir.Type.f32,
+            2, (x.kernel_size, x.kernel_size, x.in_channels, x.out_channels))
         self.hl = hlir.Operation("Conv2D", len(new_shape),
                     shape=new_shape,
                     args=(self.hl, kernel))
         if x.bias:
-            bias = hlir.Array("conv_b%d" % self.conv_counter, self.hl.rank,
-                            self.hl.shape)
+            bias = hlir.Array("conv_b%d" % self.conv_counter, hlir.Type.f32,
+                            self.hl.rank, self.hl.shape)
             self.hl = hlir.Operation("Add", self.hl.rank,
                             self.hl.shape,
                             args=(self.hl, bias))
