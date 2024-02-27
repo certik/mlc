@@ -2,13 +2,13 @@ from mlc.nnir import (Conv2D, ReLU, BatchNorm2D, MaxPool2D,
         Flatten, Linear, Sequential,
         # Transpose,
         Softmax)
-from mlc.hlir import Operation, Array, Type
+from mlc.hlir import Operation, Array, Type, MemorySpace, ExecutionSpace
 from mlc.nn_to_hl import nn_to_hl
 
 def test_op():
-    A = Array("A", Type.f32, 2, (100, 5))
-    B = Array("B", Type.f32, 2, (5, 200))
-    o = Operation("matmul", 2, (100, 200), (A, B))
+    A = Array("A", Type.f32, 2, (100, 5), MemorySpace.host)
+    B = Array("B", Type.f32, 2, (5, 200), MemorySpace.host)
+    o = Operation("matmul", (A, B), ExecutionSpace.host, 2, (100, 200), MemorySpace.host)
     print(o)
 
 def test_linear():

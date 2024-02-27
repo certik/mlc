@@ -29,16 +29,33 @@ class Type(Enum):
     f32 = auto()
     f64 = auto()
 
+class MemorySpace(Enum):
+    host = auto()
+    apu_L4 = auto()
+    apu_L1 = auto()
+    apu_VR = auto()
+
+class ExecutionSpace(Enum):
+    host = auto()
+    apu_arc = auto()
+    apu_mmb = auto()
+
 @dataclass
 class Array:
     name: str
     type: Type
     rank: int
     shape: list[int]
+    memory_space: MemorySpace
 
 @dataclass
 class Operation:
+    # TODO: change to an Enum
     op_type: str
+    args: list[Any]
+    # Where the operation is executed:
+    execution_space: ExecutionSpace
+    # Properties of the result:
     rank: int
     shape: list[int]
-    args: list[Any]
+    memory_space: MemorySpace

@@ -5,23 +5,30 @@ def create_matmul(A, B):
         assert A.rank == 1
         assert B.rank == 2
         assert A.shape[0] == B.shape[0]
-        return hlir.Operation("MatVec", 1,
+        return hlir.Operation("MatVec", rank=1,
                     shape=(B.shape[1],),
-                    args=(A, B))
+                    args=(A, B),
+                    execution_space=hlir.ExecutionSpace.host,
+                    memory_space=hlir.MemorySpace.host
+        )
     elif A.rank == 2:
         assert A.rank == 2
         assert B.rank == 2
         assert A.shape[1] == B.shape[0]
-        return hlir.Operation("MatMul", 2,
+        return hlir.Operation("MatMul", rank=2,
                     shape=(A.shape[0], B.shape[1]),
-                    args=(A, B))
+                    args=(A, B),
+                    execution_space=hlir.ExecutionSpace.host,
+                    memory_space=hlir.MemorySpace.host
+        )
     else:
         raise Exception("Only rank 1 and 2 supported in matmul for now")
 
 class NNToHLVisitor:
 
     def __init__(self, in_shape):
-        self.hl = hlir.Array("Input", hlir.Type.f32, len(in_shape), in_shape)
+        self.hl = hlir.Array("Input", hlir.Type.f32, len(in_shape), in_shape,
+                            hlir.MemorySpace.host)
         self.conv_counter = 0
         self.linear_counter = 0
 
@@ -37,14 +44,19 @@ class NNToHLVisitor:
     def visit_Linear(self, x: nnir.Linear):
         self.linear_counter += 1
         weight = hlir.Array("linear_w%d" % self.linear_counter, hlir.Type.f32,
-                            2, (x.in_features, x.out_features))
+                            2, (x.in_features, x.out_features),
+                            hlir.MemorySpace.host)
         self.hl = create_matmul(self.hl, weight)
         if x.bias:
             bias = hlir.Array("linear_b%d" % self.linear_counter, hlir.Type.f32,
-                            self.hl.rank, self.hl.shape)
-            self.hl = hlir.Operation("Add", self.hl.rank,
-                            self.hl.shape,
-                            args=(self.hl, bias))
+                            self.hl.rank, self.hl.shape,
+                            hlir.MemorySpace.host)
+            self.hl = hlir.Operation("Add", rank=self.hl.rank,
+                            shape=self.hl.shape,
+                            args=(self.hl, bias),
+                            execution_space=hlir.ExecutionSpace.host,
+                            memory_space=hlir.MemorySpace.host
+            )
 
     def visit_Conv2D(self, x: nnir.Conv2D):
         assert self.hl.rank == 2 or self.hl.rank == 3
@@ -65,41 +77,65 @@ class NNToHLVisitor:
 
         self.conv_counter += 1
         kernel = hlir.Array("conv_kernel%d" % self.conv_counter, hlir.Type.f32,
-            2, (x.kernel_size, x.kernel_size, x.in_channels, x.out_channels))
-        self.hl = hlir.Operation("Conv2D", len(new_shape),
+            2, (x.kernel_size, x.kernel_size, x.in_channels, x.out_channels),
+            hlir.MemorySpace.host)
+        self.hl = hlir.Operation("Conv2D",
+                    (self.hl, kernel),
+                    hlir.ExecutionSpace.host,
+                    rank=len(new_shape),
                     shape=new_shape,
-                    args=(self.hl, kernel))
+                    memory_space=hlir.MemorySpace.host
+        )
         if x.bias:
             bias = hlir.Array("conv_b%d" % self.conv_counter, hlir.Type.f32,
-                            self.hl.rank, self.hl.shape)
-            self.hl = hlir.Operation("Add", self.hl.rank,
-                            self.hl.shape,
-                            args=(self.hl, bias))
+                            self.hl.rank, self.hl.shape,
+                            hlir.MemorySpace.host)
+            self.hl = hlir.Operation("Add", rank=self.hl.rank,
+                            shape=self.hl.shape,
+                            args=(self.hl, bias),
+                            execution_space=hlir.ExecutionSpace.host,
+                            memory_space=hlir.MemorySpace.host
+            )
 
     def visit_ReLU(self, x: nnir.ReLU):
-        self.hl = hlir.Operation("ReLU", self.hl.rank,
+        self.hl = hlir.Operation("ReLU",
+                    args=(self.hl,),
+                    execution_space=hlir.ExecutionSpace.host,
+                    rank=self.hl.rank,
                     shape=self.hl.shape,
-                    args=(self.hl,))
+                    memory_space=hlir.MemorySpace.host
+        )
 
     def visit_Softmax(self, x: nnir.Softmax):
-        self.hl = hlir.Operation("Softmax", self.hl.rank,
+        self.hl = hlir.Operation("Softmax", rank=self.hl.rank,
                     shape=self.hl.shape,
-                    args=(self.hl,))
+                    args=(self.hl,),
+                    execution_space=hlir.ExecutionSpace.host,
+                    memory_space=hlir.MemorySpace.host
+        )
 
     def visit_MaxPool2D(self, x: nnir.MaxPool2D):
         assert self.hl.rank >= 2
         new_shape = list(self.hl.shape)[:]
         new_shape[0] //= 2
         new_shape[1] //= 2
-        self.hl = hlir.Operation("MaxPool2D", self.hl.rank,
+        self.hl = hlir.Operation("MaxPool2D",
+                    rank=self.hl.rank,
                     shape=new_shape,
-                    args=(self.hl,))
+                    args=(self.hl,),
+                    execution_space=hlir.ExecutionSpace.host,
+                    memory_space=hlir.MemorySpace.host
+        )
 
     def visit_BatchNorm2D(self, x: nnir.BatchNorm2D):
         assert self.hl.rank >= 2
-        self.hl = hlir.Operation("BatchNorm2D", self.hl.rank,
+        self.hl = hlir.Operation("BatchNorm2D",
+                    rank=self.hl.rank,
                     shape=self.hl.shape,
-                    args=(self.hl,))
+                    args=(self.hl,),
+                    execution_space=hlir.ExecutionSpace.host,
+                    memory_space=hlir.MemorySpace.host
+                    )
 
 #    def visit_Transpose(self, x: nnir.Transpose):
 #        new_shape = []
@@ -115,9 +151,12 @@ class NNToHLVisitor:
         s = 1
         for i in range(len(self.hl.shape)):
             s = s*self.hl.shape[i]
-        self.hl = hlir.Operation("Reshape", 1,
+        self.hl = hlir.Operation("Reshape", rank=1,
                     shape=(s,),
-                    args=(self.hl,))
+                    args=(self.hl,),
+                    execution_space=hlir.ExecutionSpace.host,
+                    memory_space=hlir.MemorySpace.host
+                )
 
     def visit_Sequential(self, x: nnir.Sequential):
         for layer in x.layers:
