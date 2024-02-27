@@ -1,5 +1,7 @@
 from mlc.nnir import (Conv2D, ReLU, BatchNorm2D, MaxPool2D,
-        Flatten, Linear, Sequential, Transpose, Softmax)
+        Flatten, Linear, Sequential,
+        # Transpose,
+        Softmax)
 from mlc.hlir import Operation, Array
 from mlc.nn_to_hl import nn_to_hl
 
@@ -28,7 +30,7 @@ def test_ggml_mnist_cnn():
       Conv2D(32, 64, 3, bias=True), # (11 11 64)
       ReLU(), # (11 11 64)
       MaxPool2D((2,2)), # (5 5 64)
-      Transpose((1, 2, 0)), # (64, 5, 5)
+      #Transpose((1, 2, 0)), # (64, 5, 5)
       Flatten(1, -1), # (1600)
       Linear(1600, 10, bias=True), # (10)
       Softmax(),

@@ -70,10 +70,11 @@ class Flatten:
     start_dim: int
     end_dim: int
 
-# Note: This node is not in torch.nn
-@dataclass
-class Transpose:
-    permutation: list[int]
+# Note: This node does not belong to NN IR, rather it belongs to HLIR, which
+# deals with array layouts. This node is not in torch.nn either.
+#@dataclass
+#class Transpose:
+#    permutation: list[int]
 
 ## Transformers
 
