@@ -5,7 +5,7 @@ def create_matmul(A, B):
         assert A.rank == 1
         assert B.rank == 2
         assert A.shape[0] == B.shape[0]
-        return hlir.Operation("MatVec", rank=1,
+        return hlir.Operation(hlir.OpType.MatVec, rank=1,
                     shape=(B.shape[1],),
                     args=(A, B),
                     execution_space=hlir.ExecutionSpace.host,
@@ -15,7 +15,7 @@ def create_matmul(A, B):
         assert A.rank == 2
         assert B.rank == 2
         assert A.shape[1] == B.shape[0]
-        return hlir.Operation("MatMul", rank=2,
+        return hlir.Operation(hlir.OpType.MatMul, rank=2,
                     shape=(A.shape[0], B.shape[1]),
                     args=(A, B),
                     execution_space=hlir.ExecutionSpace.host,
@@ -51,7 +51,7 @@ class NNToHLVisitor:
             bias = hlir.Array("linear_b%d" % self.linear_counter, hlir.Type.f32,
                             self.hl.rank, self.hl.shape,
                             hlir.MemorySpace.host)
-            self.hl = hlir.Operation("Add", rank=self.hl.rank,
+            self.hl = hlir.Operation(hlir.OpType.Add, rank=self.hl.rank,
                             shape=self.hl.shape,
                             args=(self.hl, bias),
                             execution_space=hlir.ExecutionSpace.host,
@@ -79,7 +79,7 @@ class NNToHLVisitor:
         kernel = hlir.Array("conv_kernel%d" % self.conv_counter, hlir.Type.f32,
             2, (x.kernel_size, x.kernel_size, x.in_channels, x.out_channels),
             hlir.MemorySpace.host)
-        self.hl = hlir.Operation("Conv2D",
+        self.hl = hlir.Operation(hlir.OpType.Conv2D,
                     (self.hl, kernel),
                     hlir.ExecutionSpace.host,
                     rank=len(new_shape),
@@ -90,7 +90,7 @@ class NNToHLVisitor:
             bias = hlir.Array("conv_b%d" % self.conv_counter, hlir.Type.f32,
                             self.hl.rank, self.hl.shape,
                             hlir.MemorySpace.host)
-            self.hl = hlir.Operation("Add", rank=self.hl.rank,
+            self.hl = hlir.Operation(hlir.OpType.Add, rank=self.hl.rank,
                             shape=self.hl.shape,
                             args=(self.hl, bias),
                             execution_space=hlir.ExecutionSpace.host,
@@ -98,7 +98,7 @@ class NNToHLVisitor:
             )
 
     def visit_ReLU(self, x: nnir.ReLU):
-        self.hl = hlir.Operation("ReLU",
+        self.hl = hlir.Operation(hlir.OpType.ReLU,
                     args=(self.hl,),
                     execution_space=hlir.ExecutionSpace.host,
                     rank=self.hl.rank,
@@ -107,7 +107,7 @@ class NNToHLVisitor:
         )
 
     def visit_Softmax(self, x: nnir.Softmax):
-        self.hl = hlir.Operation("Softmax", rank=self.hl.rank,
+        self.hl = hlir.Operation(hlir.OpType.Softmax, rank=self.hl.rank,
                     shape=self.hl.shape,
                     args=(self.hl,),
                     execution_space=hlir.ExecutionSpace.host,
@@ -119,7 +119,7 @@ class NNToHLVisitor:
         new_shape = list(self.hl.shape)[:]
         new_shape[0] //= 2
         new_shape[1] //= 2
-        self.hl = hlir.Operation("MaxPool2D",
+        self.hl = hlir.Operation(hlir.OpType.MaxPool2D,
                     rank=self.hl.rank,
                     shape=new_shape,
                     args=(self.hl,),
@@ -129,7 +129,7 @@ class NNToHLVisitor:
 
     def visit_BatchNorm2D(self, x: nnir.BatchNorm2D):
         assert self.hl.rank >= 2
-        self.hl = hlir.Operation("BatchNorm2D",
+        self.hl = hlir.Operation(hlir.OpType.BatchNorm2D,
                     rank=self.hl.rank,
                     shape=self.hl.shape,
                     args=(self.hl,),
@@ -151,7 +151,7 @@ class NNToHLVisitor:
         s = 1
         for i in range(len(self.hl.shape)):
             s = s*self.hl.shape[i]
-        self.hl = hlir.Operation("Reshape", rank=1,
+        self.hl = hlir.Operation(hlir.OpType.Reshape, rank=1,
                     shape=(s,),
                     args=(self.hl,),
                     execution_space=hlir.ExecutionSpace.host,

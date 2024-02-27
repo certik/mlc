@@ -29,6 +29,17 @@ class Type(Enum):
     f32 = auto()
     f64 = auto()
 
+class OpType(Enum):
+    MatMul = auto()
+    MatVec = auto()
+    Add = auto()
+    ReLU = auto()
+    Softmax = auto()
+    Conv2D = auto()
+    BatchNorm2D = auto()
+    MaxPool2D = auto()
+    Reshape = auto()
+
 class MemorySpace(Enum):
     host = auto()
     apu_L4 = auto()
@@ -50,8 +61,7 @@ class Array:
 
 @dataclass
 class Operation:
-    # TODO: change to an Enum
-    op_type: str
+    op_type: OpType
     args: list[Any]
     # Where the operation is executed:
     execution_space: ExecutionSpace
