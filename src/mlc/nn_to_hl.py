@@ -80,7 +80,7 @@ class NNToHLVisitor:
             2, (x.kernel_size, x.kernel_size, x.in_channels, x.out_channels),
             hlir.MemorySpace.host)
         self.hl = hlir.Operation(hlir.OpType.Conv2D,
-                    (self.hl, kernel),
+                    (kernel, self.hl),
                     hlir.ExecutionSpace.host,
                     rank=len(new_shape),
                     shape=new_shape,
