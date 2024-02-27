@@ -8,6 +8,7 @@ def create_matmul(A, B):
         return hlir.Operation(hlir.OpType.MatVec, rank=1,
                     shape=(B.shape[1],),
                     args=(A, B),
+                    type=hlir.Type.f32,
                     execution_space=hlir.ExecutionSpace.host,
                     memory_space=hlir.MemorySpace.host
         )
@@ -18,6 +19,7 @@ def create_matmul(A, B):
         return hlir.Operation(hlir.OpType.MatMul, rank=2,
                     shape=(A.shape[0], B.shape[1]),
                     args=(A, B),
+                    type=hlir.Type.f32,
                     execution_space=hlir.ExecutionSpace.host,
                     memory_space=hlir.MemorySpace.host
         )
@@ -54,6 +56,7 @@ class NNToHLVisitor:
             self.hl = hlir.Operation(hlir.OpType.Add, rank=self.hl.rank,
                             shape=self.hl.shape,
                             args=(self.hl, bias),
+                            type=hlir.Type.f32,
                             execution_space=hlir.ExecutionSpace.host,
                             memory_space=hlir.MemorySpace.host
             )
@@ -82,6 +85,7 @@ class NNToHLVisitor:
         self.hl = hlir.Operation(hlir.OpType.Conv2D,
                     (kernel, self.hl),
                     hlir.ExecutionSpace.host,
+                    type=hlir.Type.f32,
                     rank=len(new_shape),
                     shape=new_shape,
                     memory_space=hlir.MemorySpace.host
@@ -93,6 +97,7 @@ class NNToHLVisitor:
             self.hl = hlir.Operation(hlir.OpType.Add, rank=self.hl.rank,
                             shape=self.hl.shape,
                             args=(self.hl, bias),
+                            type=hlir.Type.f32,
                             execution_space=hlir.ExecutionSpace.host,
                             memory_space=hlir.MemorySpace.host
             )
@@ -101,6 +106,7 @@ class NNToHLVisitor:
         self.hl = hlir.Operation(hlir.OpType.ReLU,
                     args=(self.hl,),
                     execution_space=hlir.ExecutionSpace.host,
+                    type=hlir.Type.f32,
                     rank=self.hl.rank,
                     shape=self.hl.shape,
                     memory_space=hlir.MemorySpace.host
@@ -110,6 +116,7 @@ class NNToHLVisitor:
         self.hl = hlir.Operation(hlir.OpType.Softmax, rank=self.hl.rank,
                     shape=self.hl.shape,
                     args=(self.hl,),
+                    type=hlir.Type.f32,
                     execution_space=hlir.ExecutionSpace.host,
                     memory_space=hlir.MemorySpace.host
         )
@@ -123,6 +130,7 @@ class NNToHLVisitor:
                     rank=self.hl.rank,
                     shape=new_shape,
                     args=(self.hl,),
+                    type=hlir.Type.f32,
                     execution_space=hlir.ExecutionSpace.host,
                     memory_space=hlir.MemorySpace.host
         )
@@ -133,6 +141,7 @@ class NNToHLVisitor:
                     rank=self.hl.rank,
                     shape=self.hl.shape,
                     args=(self.hl,),
+                    type=hlir.Type.f32,
                     execution_space=hlir.ExecutionSpace.host,
                     memory_space=hlir.MemorySpace.host
                     )
@@ -154,6 +163,7 @@ class NNToHLVisitor:
         self.hl = hlir.Operation(hlir.OpType.Reshape, rank=1,
                     shape=(s,),
                     args=(self.hl,),
+                    type=hlir.Type.f32,
                     execution_space=hlir.ExecutionSpace.host,
                     memory_space=hlir.MemorySpace.host
                 )

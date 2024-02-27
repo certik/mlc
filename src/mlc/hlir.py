@@ -66,6 +66,7 @@ class Operation:
     # Where the operation is executed:
     execution_space: ExecutionSpace
     # Properties of the result:
+    type: Type
     rank: int
     shape: list[int]
     memory_space: MemorySpace

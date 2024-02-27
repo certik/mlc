@@ -26,7 +26,7 @@ digraph G {
             self.dot += """  "%s" -> "%s" [ arrowhead = vee; style = solid; label = "%s"; ]\n""" % (hex(id(arg)), hex(id(x)), "arg %d" % n)
         # TODO: add f32 as a type to Operation
         self.dot += """  "%s" [ style = filled; fillcolor = white; shape = record; label="%s"; ]\n""" % (hex(id(x)), "%s (%s) | Op %r" \
-                    % (x.op_type.name, "f32", list(x.shape)))
+                    % (x.op_type.name, x.type.name, list(x.shape)))
 
 
 
