@@ -1,15 +1,21 @@
 from dataclasses import dataclass
 from typing import Any
 
-# Machine Learning IR
+# Neural Network IR (NNIR)
 
-# Basic building blocks for graphs.
+# Basic building blocks for (neural network) graphs for machine learning.
 # These nodes correspond to
 # * https://pytorch.org/docs/stable/nn.html
 # * https://www.tensorflow.org/api_docs/python/tf/keras/
 #
 # These nodes express the high-level neural network nodes, they do not contain
-# any array specific details.
+# any array specific details, such as layout, rank, order of dimensions,
+# location (host / device), etc. These nodes contain neural network information
+# using ML neural network terminology (e.g. `linear layer`), not array
+# terminology (`matmul`).
+#
+# The NNIR gets transformed to HLIR which will contain all the array
+# information.
 
 ## Linear Layers
 
