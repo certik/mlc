@@ -27,7 +27,7 @@ class NNToHLVisitor:
 
     def visit(self, x):
         supported_nodes = ["Sequential", "Linear", "Conv2D", "ReLU", "Softmax",
-                            "MaxPool2D", "Transpose", "Flatten", "BatchNorm2D"]
+                            "MaxPool2D", "Flatten", "BatchNorm2D"]
         node_name = type(x).__name__
         if node_name in supported_nodes:
             eval("self.visit_%s(x)" % node_name)
@@ -101,13 +101,13 @@ class NNToHLVisitor:
                     shape=self.hl.shape,
                     args=(self.hl,))
 
-    def visit_Transpose(self, x: nnir.Transpose):
-        new_shape = []
-        for i in range(len(self.hl.shape)):
-            new_shape.append(self.hl.shape[x.permutation[i]])
-        self.hl = hlir.Operation("Transpose", self.hl.rank,
-                    shape=new_shape,
-                    args=(self.hl,))
+#    def visit_Transpose(self, x: nnir.Transpose):
+#        new_shape = []
+#        for i in range(len(self.hl.shape)):
+#            new_shape.append(self.hl.shape[x.permutation[i]])
+#        self.hl = hlir.Operation("Transpose", self.hl.rank,
+#                    shape=new_shape,
+#                    args=(self.hl,))
 
     def visit_Flatten(self, x: nnir.Flatten):
         assert x.start_dim == 1
