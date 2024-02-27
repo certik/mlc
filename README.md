@@ -12,3 +12,8 @@ conda activate mlc
 ```
 pytest
 ```
+
+Plot the computational graph:
+```
+dot -Tpng mnist-cnn.dot -o mnist-cnn.dot.png
+```
