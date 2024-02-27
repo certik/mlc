@@ -5,4 +5,5 @@ dependencies:
   - pytest=8.0.0
   - python=3.12.2
   - pytorch=2.1.0
+  - graphviz=9.0.0
 

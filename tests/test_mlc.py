@@ -5,6 +5,7 @@ from mlc.nnir import (Conv2D, ReLU, BatchNorm2D, MaxPool2D,
 from mlc.hlir import (Operation, Array, Type, MemorySpace, ExecutionSpace,
     OpType)
 from mlc.nn_to_hl import nn_to_hl
+from mlc.hl_to_dot import hl_to_dot
 
 def test_op():
     A = Array("A", Type.f32, 2, (100, 5), MemorySpace.host)
@@ -41,6 +42,10 @@ def test_ggml_mnist_cnn():
     hl = nn_to_hl(layers, in_shape=(28,28))
     print(hl)
     assert hl.shape == (10,)
+
+    dot = hl_to_dot(hl)
+    print(dot)
+    open("mnist-cnn.dot", "w").write(dot)
 
 def test_beautiful_mnist():
     layers = Sequential([
