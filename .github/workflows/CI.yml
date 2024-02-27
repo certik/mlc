@@ -41,3 +41,4 @@ jobs:
         shell: bash -e -x -l {0}
         run: |
             pytest
+            dot -Tpng mnist-cnn.dot -o mnist-cnn.dot.png
