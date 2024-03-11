@@ -58,7 +58,8 @@ pA1 A1_free(pA1 it) {
 
 void A1_dump(pA1 it) {
     A1_validate(it);
-    printf("\n");
+    printf("\n1D DUMP\n");
+    printf("cols = %d\n", it->cols);
     for (int i = 0; i < it->cols; i++) {
         printf("%.0f ", it->p_storage[i]);
     }
@@ -124,13 +125,15 @@ void A2_validate(pA2 it) {
 
 void A2_dump(pA2 it) {
     A2_validate(it);
+    printf("\n2D DUMP\n");
+    printf("rows = %d, cols = %d\n", it->rows, it->cols);
     for (int i = 0; i < it->rows; i++) {
-        printf("\n");
+        printf("row[%d]\t", i);
         for (int j = 0; j < it->cols; j++) {
             printf("%.0f ", it->pp_storage[i][j]);
         }
+        printf("\n");
     }
-    printf("\n");
 }
 
 
@@ -199,15 +202,18 @@ void A3_validate(pA3 it) {
 
 void A3_dump(pA3 it) {
     A3_validate(it);
+    printf("\n3D DUMP\n");
+    printf("rows = %d, cols = %d, sheets = %d\n",
+           it->rows, it->cols, it->sheets);
     for (int k = 0; k < it->sheets; k++) {
         printf("\n");
         for (int i = 0; i < it->rows; i++) {
-            printf("\n");
+            printf("sheet[%d], row[%d]\t", k, i);
             for (int j = 0; j < it->cols; j++) {
                 printf("%.0f ", it->ppp_storage[k][i][j]);
             }
+            printf("\n");
         }
-        printf("\n");
     }
 }
 
@@ -291,17 +297,21 @@ void A4_validate(pA4 it) {
 
 void A4_dump(pA4 it) {
     A4_validate(it);
+    printf("\n4D DUMP\n");
+    printf("blocks = %d, sheets = %d, rows = %d, cols = %d\n",
+           it->blocks, it->sheets, it->rows, it->cols);
     for (int l = 0; l < it->blocks; l++) {
         printf("\n");
         for (int k = 0; k < it->sheets; k++) {
             printf("\n");
             for (int i = 0; i < it->rows; i++) {
-                printf("\n");
+                printf("block[%d], sheet[%d], row[%d]\t",
+                       l, k, i);
                 for (int j = 0; j < it->cols; j++) {
                     printf("%.0f ", it->pppp_storage[l][k][i][j]);
                 }
+                printf("\n");
             }
-            printf("\n");
         }
     }
 }
