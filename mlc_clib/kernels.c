@@ -118,3 +118,75 @@ void A2_dump(pA2 it) {
     }
     printf("\n");
 }
+
+
+pA3 A3_alloc(int rows, int cols, int sheets) {
+    assert(rows >= 1);
+    assert(cols >= 1);
+    assert(sheets >= 1);
+    pA3 result = malloc(sizeof(A3));
+    assert(result != NULL);
+    result->rows = rows;
+    result->ppp_storage = malloc(sheets * sizeof(f32 **));
+    assert(result->ppp_storage != NULL);
+    for (int k = 0; k < sheets; k++) {
+        result->ppp_storage[k] = malloc(rows * sizeof(f32 *));
+        assert(result->ppp_storage[k] != NULL);
+        for (int i = 0; i < rows; i++) {
+            result->ppp_storage[k][i] = malloc(cols * sizeof(f32));
+            assert(result->ppp_storage[k][i] != NULL);
+        }
+    }
+    result->cols = cols;
+    result->sheets = sheets;
+    return result;
+}
+
+
+pA3 A3_free(pA3 it) {
+    A3_validate(it);
+    for (int k = 0; k < it->sheets; k++) {
+        for (int i = 0; i < it->rows; i++) {
+            memset(it->ppp_storage[k][i], 0, it->cols * sizeof(f32));
+            free(it->ppp_storage[i]);
+        }
+        memset(it->ppp_storage[k], 0, it->rows * sizeof(f32 *));
+        free(it->ppp_storage[k]);
+    }
+    free(it->ppp_storage);
+    it->sheets = 0;
+    it->rows = 0;
+    it->cols = 0;
+    free(it);
+    return NULL;
+}
+
+
+void A3_validate(pA3 it) {
+    assert(it != NULL);
+    assert(it->rows >= 1);
+    assert(it->cols >= 1);
+    assert(it->sheets >= 1);
+    assert(it->ppp_storage != NULL);
+    for (int k = 0; k < it->sheets; k++) {
+        assert(it->ppp_storage[k] != NULL);
+        for (int i = 0; i < it->rows; i++) {
+            assert(it->ppp_storage[k][i] != NULL);
+        }
+    }
+}
+
+
+void A3_dump(pA3 it) {
+    A3_validate(it);
+    for (int k = 0; k < it->sheets; k++) {
+        printf("\n");
+        for (int i = 0; i < it->rows; i++) {
+            printf("\n");
+            for (int j = 0; j < it->cols; j++) {
+                printf("%.0f ", it->ppp_storage[k][i][j]);
+            }
+        }
+        printf("\n");
+    }
+}
