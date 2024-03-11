@@ -63,10 +63,8 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.Softmax(dim=0),
                 )
 
-            kernel1_ = np.transpose(kernel1, (3,2,1,0))
-            kernel1_ = np.transpose(kernel1_, (3, 2, 0, 1)).copy()
             self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel1_).float())
+                    kernel1.copy()).float())
 
             # The bias is duplicated in the file
             bias1_ = np.transpose(bias1, (3,2,1,0))
@@ -74,10 +72,8 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
             self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
                     bias1_).float())
 
-            kernel2_ = np.transpose(kernel2, (3,2,1,0))
-            kernel2_ = np.transpose(kernel2_, (3, 2, 0, 1)).copy()
             self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel2_).float())
+                    kernel2.copy()).float())
 
             # The bias is duplicated in the file
             bias2_ = np.transpose(bias2, (3,2,1,0))
