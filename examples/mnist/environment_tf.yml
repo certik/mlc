@@ -1,0 +1,7 @@
+name: tf
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10.13
+  - tensorflow=2.15.0
+  - gguf=0.6.0
