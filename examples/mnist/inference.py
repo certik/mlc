@@ -67,9 +67,8 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
             self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
                     kernel1_).float())
 
-            # TODO: TensorFlow bias is (28,28,32,1),while PyTorch bias is (32,).
-            # For now we average over the first two dimensions.
-            bias1_ = np.average(bias1[:,:,:,0], axis=(0,1))
+            # The bias is duplicated in the file
+            bias1_ = bias1[0,0,:,0].copy()
             self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
                     bias1_).float())
 
@@ -77,9 +76,8 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
             self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
                     kernel2_).float())
 
-            # TODO: TensorFlow bias is (28,28,64,1),while PyTorch bias is (64,).
-            # For now we average over the first two dimensions.
-            bias2_ = np.average(bias2[:,:,:,0], axis=(0,1))
+            # The bias is duplicated in the file
+            bias2_ = bias2[0,0,:,0].copy()
             self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
                     bias2_).float())
 
