@@ -72,6 +72,54 @@ int64_t blocks(pMLCA pmlca) {
 }
 
 
+void validate(pMLCA pmlca) {
+    assert(pmlca != NULL);
+    assert(rank(pmlca) >= 1);
+    assert(pmlca->data != NULL);
+    assert(cols(pmlca) <= MLC_MAX_COLS);
+    if (pmlca->ne[1] != 0) {
+        assert(rank(pmlca) >= 2);
+        assert(rows(pmlca) <= MLC_MAX_ROWS);
+    } else {
+        assert(pmlca->ne[2] == 0);
+        assert(pmlca->ne[3] == 0);
+    }
+    if (pmlca->ne[2] != 0) {
+        assert(rank(pmlca) >= 3);
+        assert(sheets(pmlca) <= MLC_MAX_SHEETS);
+    } else {
+        assert(pmlca->ne[3] == 0);
+    }
+    if (pmlca->ne[3] != 0) {
+        assert(rank(pmlca) == 4);
+        assert(blocks(pmlca) <= MLC_MAX_BLOCKS);
+    }
+}
+
+
+f32 get1D(pMLCA pmlca, int col) {
+    assert(pmlca != NULL);
+    assert(rank(pmlca) == 1);
+    assert(pmlca->data != NULL);
+    assert(col < cols(pmlca));
+    f32 result = ((f32 *)(pmlca->data))[col];
+    return result;
+}
+
+
+void put1D(pMLCA pmlca, int col, f32 val) {
+    assert(pmlca != NULL);
+    assert(rank(pmlca) == 1);
+    assert(pmlca->data != NULL);
+    assert(col < cols(pmlca));
+    f32 * pointer  = ((f32 *)(pmlca->data));
+    pointer[col] = val;
+}
+
+
+//pMLCA alloc1D
+
+
 /*  ____  _   _ _____    ___     _______ ____   */
 /* / ___|| | | | ____|  / \ \   / / ____|  _ \  */
 /* \___ \| |_| |  _|   / _ \ \ / /|  _| | | | | */
@@ -95,7 +143,7 @@ pA1 A1_alloc(int cols) {
     pA1 result = malloc(sizeof(A1));
     assert(result != NULL);
     result->cols = cols;
-    result->p_storage = malloc(cols * sizeof(f32));
+    result->p_storage = malloc(cols * MLC_DATUM_SIZE);
     assert(result->p_storage != NULL);
     return result;
 }
@@ -111,7 +159,7 @@ pA1 A1_alloc(int cols) {
  */
 pA1 A1_free(pA1 it) {
     A1_validate(it);
-    memset(it->p_storage, 0, it->cols * sizeof(f32));
+    memset(it->p_storage, 0, it->cols * MLC_DATUM_SIZE);
     free(it->p_storage);
     it->p_storage = NULL;
     it->cols = 0;
@@ -152,7 +200,7 @@ pA2 A2_alloc(int rows, int cols) {
     result->pp_storage = malloc(rows * sizeof(f32 *));
     assert(result->pp_storage != NULL);
     for (int i = 0; i < rows; i++) {
-        result->pp_storage[i] = malloc(cols * sizeof(f32));
+        result->pp_storage[i] = malloc(cols * MLC_DATUM_SIZE);
         assert(result->pp_storage[i] != NULL);
     }
     result->rows = rows;
@@ -164,7 +212,7 @@ pA2 A2_alloc(int rows, int cols) {
 pA2 A2_free(pA2 it) {
     A2_validate(it);
     for (int i = 0; i < it->rows; i++) {
-        memset(it->pp_storage[i], 0, it->cols * sizeof(f32));
+        memset(it->pp_storage[i], 0, it->cols * MLC_DATUM_SIZE);
         free(it->pp_storage[i]);
     }
     memset(it->pp_storage, 0, it->rows * sizeof(f32 *));
@@ -219,7 +267,7 @@ pA3 A3_alloc(int rows, int cols, int sheets) {
         result->ppp_storage[k] = malloc(rows * sizeof(f32 *));
         assert(result->ppp_storage[k] != NULL);
         for (int i = 0; i < rows; i++) {
-            result->ppp_storage[k][i] = malloc(cols * sizeof(f32));
+            result->ppp_storage[k][i] = malloc(cols * MLC_DATUM_SIZE);
             assert(result->ppp_storage[k][i] != NULL);
         }
     }
@@ -234,7 +282,7 @@ pA3 A3_free(pA3 it) {
     A3_validate(it);
     for (int k = 0; k < it->sheets; k++) {
         for (int i = 0; i < it->rows; i++) {
-            memset(it->ppp_storage[k][i], 0, it->cols * sizeof(f32));
+            memset(it->ppp_storage[k][i], 0, it->cols * MLC_DATUM_SIZE);
             free(it->ppp_storage[k][i]);
         }
         memset(it->ppp_storage[k], 0, it->rows * sizeof(f32 *));
@@ -303,7 +351,7 @@ pA4 A4_alloc(int rows, int cols, int sheets, int blocks) {
             result->pppp_storage[l][k] = malloc(rows * sizeof(f32 *));
             assert(result->pppp_storage[l][k] != NULL);
             for (int i = 0; i < rows; i++) {
-                result->pppp_storage[l][k][i] = malloc(cols * sizeof(f32));
+                result->pppp_storage[l][k][i] = malloc(cols * MLC_DATUM_SIZE);
                 assert(result->pppp_storage[l][k][i] != NULL);
             }
         }
@@ -321,7 +369,7 @@ pA4 A4_free(pA4 it) {
     for (int l = 0; l < it->blocks; l++) {
         for (int k = 0; k < it->sheets; k++) {
             for (int i = 0; i < it->rows; i++) {
-                memset(it->pppp_storage[l][k][i], 0, it->cols * sizeof(f32));
+                memset(it->pppp_storage[l][k][i], 0, it->cols * MLC_DATUM_SIZE);
                 free(it->pppp_storage[l][k][i]);
             }
             memset(it->pppp_storage[l][k], 0, it->rows * sizeof(f32 *));
