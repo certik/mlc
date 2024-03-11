@@ -33,7 +33,7 @@ PYTHONPATH="./src:$PYTHONPATH" pytest
 or once per terminal session: 
 
 ```
-export PYTHONPATH="./src:$PYTHONPATH
+export PYTHONPATH="./src:$PYTHONPATH"
 ```
 
 before running tests.
