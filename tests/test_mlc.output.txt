@@ -1,0 +1,60 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-8.0.0, pluggy-1.4.0
+rootdir: /Users/brian/Dropbox/Mac/Documents/GitHub/mlc
+collected 5 items
+
+tests/test_mlc.py Operation(op_type=<OpType.MatMul: 1>, args=(Array(name='A', type=<Type.f32: 3>, rank=2, shape=(100, 5), memory_space=<MemorySpace.host: 1>), Array(name='B', type=<Type.f32: 3>, rank=2, shape=(5, 200), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=2, shape=(100, 200), memory_space=<MemorySpace.host: 1>)
+.Sequential(layers=[Linear(in_features=256, out_features=2048, bias=False), Linear(in_features=2048, out_features=768, bias=False)])
+Operation(op_type=<OpType.MatMul: 1>, args=(Operation(op_type=<OpType.MatMul: 1>, args=(Array(name='Input', type=<Type.f32: 3>, rank=2, shape=(100, 256), memory_space=<MemorySpace.host: 1>), Array(name='linear_w1', type=<Type.f32: 3>, rank=2, shape=(256, 2048), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=2, shape=(100, 2048), memory_space=<MemorySpace.host: 1>), Array(name='linear_w2', type=<Type.f32: 3>, rank=2, shape=(2048, 768), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=2, shape=(100, 768), memory_space=<MemorySpace.host: 1>)
+.Sequential(layers=[Conv2D(in_channels=1, out_channels=32, kernel_size=3, bias=True), ReLU(), MaxPool2D(kernel_size=(2, 2)), Conv2D(in_channels=32, out_channels=64, kernel_size=3, bias=True), ReLU(), MaxPool2D(kernel_size=(2, 2)), Flatten(start_dim=1, end_dim=-1), Linear(in_features=1600, out_features=10, bias=True), Softmax()])
+Operation(op_type=<OpType.Softmax: 5>, args=(Operation(op_type=<OpType.Add: 3>, args=(Operation(op_type=<OpType.MatVec: 2>, args=(Operation(op_type=<OpType.Reshape: 9>, args=(Operation(op_type=<OpType.MaxPool2D: 8>, args=(Operation(op_type=<OpType.ReLU: 4>, args=(Operation(op_type=<OpType.Add: 3>, args=(Operation(op_type=<OpType.Conv2D: 6>, args=(Array(name='conv_kernel2', type=<Type.f32: 3>, rank=2, shape=(3, 3, 32, 64), memory_space=<MemorySpace.host: 1>), Operation(op_type=<OpType.MaxPool2D: 8>, args=(Operation(op_type=<OpType.ReLU: 4>, args=(Operation(op_type=<OpType.Add: 3>, args=(Operation(op_type=<OpType.Conv2D: 6>, args=(Array(name='conv_kernel1', type=<Type.f32: 3>, rank=2, shape=(3, 3, 1, 32), memory_space=<MemorySpace.host: 1>), Array(name='Input', type=<Type.f32: 3>, rank=2, shape=(28, 28), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[26, 26, 32], memory_space=<MemorySpace.host: 1>), Array(name='conv_b1', type=<Type.f32: 3>, rank=3, shape=[26, 26, 32], memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[26, 26, 32], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[26, 26, 32], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[13, 13, 32], memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[11, 11, 64], memory_space=<MemorySpace.host: 1>), Array(name='conv_b2', type=<Type.f32: 3>, rank=3, shape=[11, 11, 64], memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[11, 11, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[11, 11, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[5, 5, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=1, shape=(1600,), memory_space=<MemorySpace.host: 1>), Array(name='linear_w1', type=<Type.f32: 3>, rank=2, shape=(1600, 10), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=1, shape=(10,), memory_space=<MemorySpace.host: 1>), Array(name='linear_b1', type=<Type.f32: 3>, rank=1, shape=(10,), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=1, shape=(10,), memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=1, shape=(10,), memory_space=<MemorySpace.host: 1>)
+digraph G {
+  newrank = true;
+  rankdir = LR;
+  "0x13f7b29f0" [ style = filled; fillcolor = pink; shape = record; label="conv_kernel2 (f32) | Array [3, 3, 32, 64]"; ]
+  "0x13f7b29f0" -> "0x13f7b2a20" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f1ba720" [ style = filled; fillcolor = pink; shape = record; label="conv_kernel1 (f32) | Array [3, 3, 1, 32]"; ]
+  "0x13f1ba720" -> "0x13694cec0" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x105c7e780" [ style = filled; fillcolor = pink; shape = record; label="Input (f32) | Array [28, 28]"; ]
+  "0x105c7e780" -> "0x13694cec0" [ arrowhead = vee; style = solid; label = "arg 1"; ]
+  "0x13694cec0" [ style = filled; fillcolor = white; shape = record; label="Conv2D (f32) | Op [26, 26, 32]"; ]
+  "0x13694cec0" -> "0x13f7b2960" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2930" [ style = filled; fillcolor = pink; shape = record; label="conv_b1 (f32) | Array [26, 26, 32]"; ]
+  "0x13f7b2930" -> "0x13f7b2960" [ arrowhead = vee; style = solid; label = "arg 1"; ]
+  "0x13f7b2960" [ style = filled; fillcolor = white; shape = record; label="Add (f32) | Op [26, 26, 32]"; ]
+  "0x13f7b2960" -> "0x13f7b2990" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2990" [ style = filled; fillcolor = white; shape = record; label="ReLU (f32) | Op [26, 26, 32]"; ]
+  "0x13f7b2990" -> "0x13f7b29c0" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b29c0" [ style = filled; fillcolor = white; shape = record; label="MaxPool2D (f32) | Op [13, 13, 32]"; ]
+  "0x13f7b29c0" -> "0x13f7b2a20" [ arrowhead = vee; style = solid; label = "arg 1"; ]
+  "0x13f7b2a20" [ style = filled; fillcolor = white; shape = record; label="Conv2D (f32) | Op [11, 11, 64]"; ]
+  "0x13f7b2a20" -> "0x13f7b2ab0" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2a80" [ style = filled; fillcolor = pink; shape = record; label="conv_b2 (f32) | Array [11, 11, 64]"; ]
+  "0x13f7b2a80" -> "0x13f7b2ab0" [ arrowhead = vee; style = solid; label = "arg 1"; ]
+  "0x13f7b2ab0" [ style = filled; fillcolor = white; shape = record; label="Add (f32) | Op [11, 11, 64]"; ]
+  "0x13f7b2ab0" -> "0x13f7b2ae0" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2ae0" [ style = filled; fillcolor = white; shape = record; label="ReLU (f32) | Op [11, 11, 64]"; ]
+  "0x13f7b2ae0" -> "0x13f7b2b10" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2b10" [ style = filled; fillcolor = white; shape = record; label="MaxPool2D (f32) | Op [5, 5, 64]"; ]
+  "0x13f7b2b10" -> "0x13f7b2b70" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2b70" [ style = filled; fillcolor = white; shape = record; label="Reshape (f32) | Op [1600]"; ]
+  "0x13f7b2b70" -> "0x13f7b2ba0" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2b40" [ style = filled; fillcolor = pink; shape = record; label="linear_w1 (f32) | Array [1600, 10]"; ]
+  "0x13f7b2b40" -> "0x13f7b2ba0" [ arrowhead = vee; style = solid; label = "arg 1"; ]
+  "0x13f7b2ba0" [ style = filled; fillcolor = white; shape = record; label="MatVec (f32) | Op [10]"; ]
+  "0x13f7b2ba0" -> "0x13f7b2c00" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2bd0" [ style = filled; fillcolor = pink; shape = record; label="linear_b1 (f32) | Array [10]"; ]
+  "0x13f7b2bd0" -> "0x13f7b2c00" [ arrowhead = vee; style = solid; label = "arg 1"; ]
+  "0x13f7b2c00" [ style = filled; fillcolor = white; shape = record; label="Add (f32) | Op [10]"; ]
+  "0x13f7b2c00" -> "0x13f7b2c30" [ arrowhead = vee; style = solid; label = "arg 0"; ]
+  "0x13f7b2c30" [ style = filled; fillcolor = white; shape = record; label="Softmax (f32) | Op [10]"; ]
+}
+.Sequential(layers=[Conv2D(in_channels=1, out_channels=32, kernel_size=5, bias=False), ReLU(), Conv2D(in_channels=32, out_channels=32, kernel_size=5, bias=False), ReLU(), BatchNorm2D(num_features=32), MaxPool2D(kernel_size=(2, 2)), Conv2D(in_channels=32, out_channels=64, kernel_size=3, bias=False), ReLU(), Conv2D(in_channels=64, out_channels=64, kernel_size=3, bias=False), ReLU(), BatchNorm2D(num_features=64), MaxPool2D(kernel_size=(2, 2)), Flatten(start_dim=1, end_dim=-1), Linear(in_features=576, out_features=10, bias=False)])
+Operation(op_type=<OpType.MatVec: 2>, args=(Operation(op_type=<OpType.Reshape: 9>, args=(Operation(op_type=<OpType.MaxPool2D: 8>, args=(Operation(op_type=<OpType.BatchNorm2D: 7>, args=(Operation(op_type=<OpType.ReLU: 4>, args=(Operation(op_type=<OpType.Conv2D: 6>, args=(Array(name='conv_kernel4', type=<Type.f32: 3>, rank=2, shape=(3, 3, 64, 64), memory_space=<MemorySpace.host: 1>), Operation(op_type=<OpType.ReLU: 4>, args=(Operation(op_type=<OpType.Conv2D: 6>, args=(Array(name='conv_kernel3', type=<Type.f32: 3>, rank=2, shape=(3, 3, 32, 64), memory_space=<MemorySpace.host: 1>), Operation(op_type=<OpType.MaxPool2D: 8>, args=(Operation(op_type=<OpType.BatchNorm2D: 7>, args=(Operation(op_type=<OpType.ReLU: 4>, args=(Operation(op_type=<OpType.Conv2D: 6>, args=(Array(name='conv_kernel2', type=<Type.f32: 3>, rank=2, shape=(5, 5, 32, 32), memory_space=<MemorySpace.host: 1>), Operation(op_type=<OpType.ReLU: 4>, args=(Operation(op_type=<OpType.Conv2D: 6>, args=(Array(name='conv_kernel1', type=<Type.f32: 3>, rank=2, shape=(5, 5, 1, 32), memory_space=<MemorySpace.host: 1>), Array(name='Input', type=<Type.f32: 3>, rank=2, shape=(28, 28), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[24, 24, 32], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[24, 24, 32], memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[20, 20, 32], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[20, 20, 32], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[20, 20, 32], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[10, 10, 32], memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[8, 8, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[8, 8, 64], memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[6, 6, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[6, 6, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[6, 6, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=3, shape=[3, 3, 64], memory_space=<MemorySpace.host: 1>),), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=1, shape=(576,), memory_space=<MemorySpace.host: 1>), Array(name='linear_w1', type=<Type.f32: 3>, rank=2, shape=(576, 10), memory_space=<MemorySpace.host: 1>)), execution_space=<ExecutionSpace.host: 1>, type=<Type.f32: 3>, rank=1, shape=(10,), memory_space=<MemorySpace.host: 1>)
+.
+tests/test_pytorch.py input dims:  torch.Size([100, 256])
+output dims:  torch.Size([100, 768])
+torch.float32
+.
+
+============================== 5 passed in 0.96s ===============================
