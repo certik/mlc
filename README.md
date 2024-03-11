@@ -1,11 +1,53 @@
 # Machine Learning Compiler (mlc)
 
+In top-level directory, `mlc`.
+
 ## Build
+
+### (Recommended) Install `mamba` and `conda` from `miniforge`.
+
+We have found that the `miniforge` versions of `mamba` and `conda`
+work better than those you get from the `anaconda` graphical 
+installer. You can make any of them work, but this seems 
+smoothest to us.
+
+https://github.com/conda-forge/miniforge
+
+### Create and Activate Environment
 
 ```
 mamba env create -f environment_unix.yml
 conda activate mlc
 ```
+
+## Install `src`, or set `PYTHONPATH`
+
+There are two ways to make the code accessible
+and to reload it on each run: 
+
+### Alternative 1: Install Editable
+
+into the `mlc` environment
+
+```
+pip install -e .
+```
+
+### Alternative 2: Set `PYTHONPATH`
+
+Either on-the-fly for each run, for example: 
+
+```
+PYTHONPATH="./src:$PYTHONPATH" pytest
+```
+
+or once per terminal session: 
+
+```
+export PYTHONPATH="./src:$PYTHONPATH"
+```
+
+before running tests.
 
 ## Run tests:
 
@@ -13,7 +55,16 @@ conda activate mlc
 pytest
 ```
 
-Plot the computational graph:
+## See the IR
+
+The `-s` option tells `pytest` to display `print` output.
+
+```
+pytest -s
+```
+
+## Plot the computational graph:
+
 ```
 dot -Tpng mnist-cnn.dot -o mnist-cnn.dot.png
 ```
