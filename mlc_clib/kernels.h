@@ -74,7 +74,7 @@ typedef struct mlc_array {
 /*
  * Count number of leading non-zero dimensions in ne.
  */
-int64_t rank(pMLCA pmlca);
+int rank(pMLCA pmlca);
 int64_t cols(pMLCA pmlca);
 int64_t rows(pMLCA pmlca);
 int64_t sheets(pMLCA pmlca);

@@ -35,7 +35,7 @@ void test_linkage() {
 /*
  * Count number of leading non-zero dimensions in ne.
  */
-int64_t rank(pMLCA pmlca) {
+int rank(pMLCA pmlca) {
     assert(pmlca != NULL);
     int result = 0;
     for (int r = 0; r < MLC_MAX_RANK; r++) {
