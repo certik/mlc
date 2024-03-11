@@ -45,7 +45,7 @@ def gguf_to_array(g, expected_name):
     if g.name != expected_name:
         raise Exception("Expected array name `%s`, got `%s`" % \
                 (expected_name, g.name))
-    return np.reshape(g.data, g.shape)
+    return np.reshape(g.data, np.flip(g.shape))
 
 def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     class Model(torch.nn.Module):
@@ -63,25 +63,30 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.Softmax(dim=0),
                 )
 
-            kernel1_ = np.transpose(kernel1, (3, 2, 0, 1)).copy()
+            kernel1_ = np.transpose(kernel1, (3,2,1,0))
+            kernel1_ = np.transpose(kernel1_, (3, 2, 0, 1)).copy()
             self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
                     kernel1_).float())
 
             # The bias is duplicated in the file
-            bias1_ = bias1[0,0,:,0].copy()
+            bias1_ = np.transpose(bias1, (3,2,1,0))
+            bias1_ = bias1_[0,0,:,0].copy()
             self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
                     bias1_).float())
 
-            kernel2_ = np.transpose(kernel2, (3, 2, 0, 1)).copy()
+            kernel2_ = np.transpose(kernel2, (3,2,1,0))
+            kernel2_ = np.transpose(kernel2_, (3, 2, 0, 1)).copy()
             self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
                     kernel2_).float())
 
             # The bias is duplicated in the file
-            bias2_ = bias2[0,0,:,0].copy()
+            bias2_ = np.transpose(bias2, (3,2,1,0))
+            bias2_ = bias2_[0,0,:,0].copy()
             self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
                     bias2_).float())
 
-            dense_w_ = np.transpose(dense_w, (1, 0)).copy()
+            dense_w_ = np.transpose(dense_w, (1,0))
+            dense_w_ = np.transpose(dense_w_, (1, 0)).copy()
             self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
                     dense_w_).float())
 
