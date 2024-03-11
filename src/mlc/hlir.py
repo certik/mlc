@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any
 
+
 # High-Level (Array) IR (HLIR)
 
 # Represents the computational graph using array operations with a complete
@@ -29,6 +30,7 @@ class Type(Enum):
     f32 = auto()
     f64 = auto()
 
+
 class OpType(Enum):
     MatMul = auto()
     MatVec = auto()
@@ -40,16 +42,19 @@ class OpType(Enum):
     MaxPool2D = auto()
     Reshape = auto()
 
+
 class MemorySpace(Enum):
     host = auto()
     apu_L4 = auto()
     apu_L1 = auto()
     apu_VR = auto()
 
+
 class ExecutionSpace(Enum):
     host = auto()
     apu_arc = auto()
     apu_mmb = auto()
+
 
 @dataclass
 class Array:
@@ -58,6 +63,7 @@ class Array:
     rank: int
     shape: list[int]
     memory_space: MemorySpace
+
 
 @dataclass
 class Operation:
