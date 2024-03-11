@@ -45,6 +45,33 @@ void A1_validate(pA1 it);
 void A1_dump(pA1 it);
 
 
+typedef struct array_2 {
+    f32 ** pp_storage;
+    int rows;
+    int cols;
+} A2, * pA2;
+
+
+pA2 A2_alloc(int rows, int cols);
+pA2 A2_free(pA2 it);
+void A2_validate(pA2 it);
+void A2_dump(pA2 it);
+
+
+typedef struct array_3 {
+    f32 *** pp_storage;
+    int rows;
+    int cols;
+    int sheets;
+} A3, * pA3;
+
+
+pA3 A3_alloc(int rows, int cols, int sheets);
+pA3 A3_free(pA3 it);
+void A3_validate(pA3 it);
+void A3_dump(pA3 it);
+
+
 /*
  * The innermost operation is a Conv2D with the following spec:
  *

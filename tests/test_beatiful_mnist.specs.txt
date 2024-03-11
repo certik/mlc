@@ -17,15 +17,20 @@
 
 Operation(
     op_type=<OpType.MatVec: 2>,
-    args=(Operation(
+    args=(
+        Operation(
         op_type=<OpType.Reshape: 9>,
-        args=(Operation(
+        args=(
+            Operation(
             op_type=<OpType.MaxPool2D: 8>,
-            args=(Operation(
+            args=(
+                Operation(
                 op_type=<OpType.BatchNorm2D: 7>,
-                args=(Operation(
+                args=(
+                    Operation(
                     op_type=<OpType.ReLU: 4>,
-                    args=(Operation(
+                    args=(
+                        Operation(
                         op_type=<OpType.Conv2D: 6>,
                         args=(
                             Array(
@@ -36,75 +41,82 @@ Operation(
                                 memory_space=<MemorySpace.host: 1>),
                             Operation(
                                 op_type=<OpType.ReLU: 4>,
-                                args=(Operation(
+                                args=(
+                                    Operation(
                                     op_type=<OpType.Conv2D: 6>,
-                                    args=(Array(
-                                        name='conv_kernel3',
-                                        type=<Type.f32: 3>,
-                                        rank=2,
-                                        shape=(3, 3, 32, 64),
-                                        memory_space=<MemorySpace.host: 1>),
-                                          Operation(
-                                              op_type=<OpType.MaxPool2D: 8>,
-                                              args=(Operation(
-                                                  op_type=<OpType.BatchNorm2D: 7>,
-                                                  args=(Operation(
-                                                      op_type=<OpType.ReLU: 4>,
-                                                      args=(
-                                                          Operation(
-                                                              op_type=<OpType.Conv2D: 6>,
-                                                              args=(Array(
-                                                                  name='conv_kernel2',
-                                                                  type=<Type.f32: 3>,
-                                                                  rank=2,
-                                                                  shape=(5, 5, 32, 32),
-                                                                  memory_space=<MemorySpace.host: 1>),
-                                                                    Operation(
-                                                                        op_type=<OpType.ReLU: 4>,
-                                                                        args=(Operation(
-                                                                            op_type=<OpType.Conv2D: 6>,
-                                                                            args=(Array(
+                                    args=(
+                                        Array(
+                                            name='conv_kernel3',
+                                            type=<Type.f32: 3>,
+                                            rank=2,
+                                            shape=(3, 3, 32, 64),
+                                            memory_space=<MemorySpace.host: 1>),
+                                        Operation(
+                                            op_type=<OpType.MaxPool2D: 8>,
+                                            args=(
+                                                Operation(
+                                                op_type=<OpType.BatchNorm2D: 7>,
+                                                args=(
+                                                    Operation(
+                                                    op_type=<OpType.ReLU: 4>,
+                                                    args=(
+                                                        Operation(
+                                                            op_type=<OpType.Conv2D: 6>,
+                                                            args=(
+                                                                Array(
+                                                                    name='conv_kernel2',
+                                                                    type=<Type.f32: 3>,
+                                                                    rank=2,
+                                                                    shape=(5, 5, 32, 32),
+                                                                    memory_space=<MemorySpace.host: 1>),
+                                                                Operation(
+                                                                    op_type=<OpType.ReLU: 4>,
+                                                                    args=(
+                                                                        Operation(
+                                                                        op_type=<OpType.Conv2D: 6>,
+                                                                        args=(
+                                                                            Array(
                                                                                 name='conv_kernel1',
                                                                                 type=<Type.f32: 3>,
                                                                                 rank=2,
                                                                                 shape=(5, 5, 1, 32),
                                                                                 memory_space=<MemorySpace.host: 1>),
-                                                                                  Array(
-                                                                                      name='Input',
-                                                                                      type=<Type.f32: 3>,
-                                                                                      rank=2,
-                                                                                      shape=(28, 28),
-                                                                                      memory_space=<MemorySpace.host: 1>)),
-                                                                            execution_space=<ExecutionSpace.host: 1>,
-                                                                            type=<Type.f32: 3>,
-                                                                            rank=3,
-                                                                            shape=[24, 24, 32],
-                                                                            memory_space=<MemorySpace.host: 1>),),
+                                                                            Array(
+                                                                                name='Input',
+                                                                                type=<Type.f32: 3>,
+                                                                                rank=2,
+                                                                                shape=(28, 28),
+                                                                                memory_space=<MemorySpace.host: 1>)),
                                                                         execution_space=<ExecutionSpace.host: 1>,
                                                                         type=<Type.f32: 3>,
                                                                         rank=3,
                                                                         shape=[24, 24, 32],
-                                                                        memory_space=<MemorySpace.host: 1>)),
-                                                              execution_space=<ExecutionSpace.host: 1>,
-                                                              type=<Type.f32: 3>,
-                                                              rank=3,
-                                                              shape=[20, 20, 32],
-                                                              memory_space=<MemorySpace.host: 1>),),
-                                                      execution_space=<ExecutionSpace.host: 1>,
-                                                      type=<Type.f32: 3>,
-                                                      rank=3,
-                                                      shape=[20, 20, 32],
-                                                      memory_space=<MemorySpace.host: 1>),),
-                                                  execution_space=<ExecutionSpace.host: 1>,
-                                                  type=<Type.f32: 3>,
-                                                  rank=3,
-                                                  shape=[20, 20, 32],
-                                                  memory_space=<MemorySpace.host: 1>),),
-                                              execution_space=<ExecutionSpace.host: 1>,
-                                              type=<Type.f32: 3>,
-                                              rank=3,
-                                              shape=[10, 10, 32],
-                                              memory_space=<MemorySpace.host: 1>)),
+                                                                        memory_space=<MemorySpace.host: 1>),),
+                                                                    execution_space=<ExecutionSpace.host: 1>,
+                                                                    type=<Type.f32: 3>,
+                                                                    rank=3,
+                                                                    shape=[24, 24, 32],
+                                                                    memory_space=<MemorySpace.host: 1>)),
+                                                            execution_space=<ExecutionSpace.host: 1>,
+                                                            type=<Type.f32: 3>,
+                                                            rank=3,
+                                                            shape=[20, 20, 32],
+                                                            memory_space=<MemorySpace.host: 1>),),
+                                                    execution_space=<ExecutionSpace.host: 1>,
+                                                    type=<Type.f32: 3>,
+                                                    rank=3,
+                                                    shape=[20, 20, 32],
+                                                    memory_space=<MemorySpace.host: 1>),),
+                                                execution_space=<ExecutionSpace.host: 1>,
+                                                type=<Type.f32: 3>,
+                                                rank=3,
+                                                shape=[20, 20, 32],
+                                                memory_space=<MemorySpace.host: 1>),),
+                                            execution_space=<ExecutionSpace.host: 1>,
+                                            type=<Type.f32: 3>,
+                                            rank=3,
+                                            shape=[10, 10, 32],
+                                            memory_space=<MemorySpace.host: 1>)),
                                     execution_space=<ExecutionSpace.host: 1>,
                                     type=<Type.f32: 3>,
                                     rank=3,
