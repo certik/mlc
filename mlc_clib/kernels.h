@@ -54,6 +54,14 @@ typedef float f32;
 #define MLC_SHEETS_IDX  2
 #define MLC_BLOCKS_IDX  3
 
+#define MLC_DATUM_SIZE (sizeof(f32))
+
+// Guesses -- full-boat is 256 GB
+#define MLC_MAX_COLS    1024
+#define MLC_MAX_ROWS    1024
+#define MLC_MAX_SHEETS   128
+#define MLC_MAX_BLOCKS    64
+
 #define MLC_MAX_NAME   64  // actual name < 64; last byte for string-term NULL
 
 // like ggml_tensor at the URL above, just less general.
@@ -79,6 +87,30 @@ int64_t cols(pMLCA pmlca);
 int64_t rows(pMLCA pmlca);
 int64_t sheets(pMLCA pmlca);
 int64_t blocks(pMLCA pmlca);
+
+
+f32 get1D(pMLCA pmlca, int col);
+f32 get2D(pMLCA pmlca, int row, int col);
+f32 get3D(pMLCA pmlca, int sheet, int row, int col);
+f32 get4D(pMLCA pmlca, int block, int sheet, int row, int col);
+
+
+void put1D(pMLCA pmlca, int col, f32 val);
+void put2D(pMLCA pmlca, int row, int col, f32 val);
+void put3D(pMLCA pmlca, int sheet, int row, int col, f32 val);
+void put4D(pMLCA pmlca, int block, int sheet, int row, int col, f32 val);
+
+
+pMLCA alloc1D(int col);
+pMLCA alloc2D(int row, int col);
+pMLCA alloc3D(int sheet, int row, int col);
+pMLCA alloc4D(int block, int sheet, int row, int col);
+
+
+void validate(pMLCA pmlca);
+
+void freeMLCA(pMLCA pmlca);
+
 
 
 /*  ____  _   _ _____    ___     _______ ____   */
