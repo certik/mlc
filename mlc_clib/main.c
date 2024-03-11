@@ -30,8 +30,7 @@ void test_1D() {
     A1_dump(pa1);
     A1_free(pa1);
     // DON'T DO THIS!
-// A1_dump(pa1);
-
+    // A1_dump(pa1);
 }
 
 void test_2D() {
