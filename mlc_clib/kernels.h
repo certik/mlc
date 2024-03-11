@@ -26,6 +26,12 @@ typedef float f32;
 
 /*
  * There are arrays of rank 1, 2, and 3 in the spec.
+ *
+ * Internally, to start, let's have a non-contiguous storage
+ * model, where a 2-D array is an array of pointers to 1-D arrays,
+ * and 1-D arrays are contiguous. This model can be re- placed
+ * with a contiguous model, in which a 2-D array is a contiguous
+ * block and its array of pointers pp_storage are strided into it.
  */
 
 
@@ -37,8 +43,8 @@ typedef struct array_1 {
 
 pA1 A1_alloc(int dim);
 /*
- * Return a null pointer to help calling code to avoid using
- * deallocated memory.
+ * Return a null pointer from "free" to help calling code to avoid
+ * using deallocated memory.
  */
 pA1 A1_free(pA1 it);
 void A1_validate(pA1 it);
@@ -59,7 +65,7 @@ void A2_dump(pA2 it);
 
 
 typedef struct array_3 {
-    f32 *** pp_storage;
+    f32 *** ppp_storage;
     int rows;
     int cols;
     int sheets;
