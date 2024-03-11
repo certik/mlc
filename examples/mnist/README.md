@@ -39,3 +39,14 @@ package, already installed in the `tf` conda environment:
           4:       7744 |    11,    11,    64,     1 | F32     | bias2
           5:      16000 |  1600,    10,     1,     1 | F32     | dense_w
           6:         10 |    10,     1,     1,     1 | F32     | dense_b
+
+To load these weights from Python:
+
+    >>> from gguf.gguf_reader import GGUFReader
+    >>> g = GGUFReader("mnist-cnn-model.gguf")
+    >>> print(g.fields)
+    >>> print(g.tensors)
+    >>> from numpy import array
+    >>> array(g.tensors[2].data)
+    array([-0.00785,  0.0158 ,  0.282  , ...,  0.3318 ,  0.09576, -0.11816],
+          dtype=float16)
