@@ -39,8 +39,7 @@ pA1 A1_alloc(int dim) {
  */
 pA1 A1_free(pA1 it) {
     A1_validate(it);
-    memset(it->p_storage, it->dim, sizeof(f32));
-    it->dim = 0;
+    memset(it->p_storage, 0, it->dim * sizeof(f32));
     free(it->p_storage);
     it->p_storage = NULL;
     it->dim = 0;
@@ -53,7 +52,7 @@ void A1_dump(pA1 it) {
     A1_validate(it);
     printf("\n");
     for (int i = 0; i < it->dim; i++) {
-        printf("%f ", it->p_storage[i]);
+        printf("%.0f ", it->p_storage[i]);
     }
     printf("\n");
 }
@@ -71,16 +70,33 @@ pA2 A2_alloc(int rows, int cols) {
     assert(cols >= 1);
     pA2 result = malloc(sizeof(A2));
     assert(result != NULL);
+    result->rows = rows;
+    result->pp_storage = malloc(rows * sizeof(f32 *));
+    assert(result->pp_storage != NULL);
+    for (int i = 0; i < rows; i++) {
+        result->pp_storage[i] = malloc(cols * sizeof(f32));
+        assert(result->pp_storage[i] != NULL);
+    }
+    return result;
 }
 
 
 pA2 A2_free(pA2 it) {
-
+    A2_validate(it);
+    for (int i = 0; i < it->rows; i++) {
+//        memset(it->pp_storage[i], it->cols, )
+    }
 }
 
 
 void A2_validate(pA2 it) {
-
+    assert(it != NULL);
+    assert(it->rows >= 1);
+    assert(it->cols >= 1);
+    assert(it->pp_storage != NULL);
+    for (int i = 0; i < it->rows; i++) {
+        assert(it->pp_storage[i] != NULL);
+    }
 }
 
 
