@@ -52,7 +52,8 @@ The `-s` option tells `pytest` to display `print` output.
 pytest -s
 ```
 
-Plot the computational graph:
+## Plot the computational graph:
+
 ```
 dot -Tpng mnist-cnn.dot -o mnist-cnn.dot.png
 ```
