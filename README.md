@@ -12,7 +12,7 @@ conda activate mlc
 ## Install `src`, or set `PYTHONPATH`
 
 There are two ways to make the code accessible
-and reload it on each run: 
+and to reload it on each run: 
 
 ### Alternative 1: Install Editable
 
