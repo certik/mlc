@@ -13,6 +13,8 @@ smoothest to us.
 
 https://github.com/conda-forge/miniforge
 
+### Create and Activate Environment
+
 ```
 mamba env create -f environment_unix.yml
 conda activate mlc
