@@ -1,5 +1,7 @@
 # Machine Learning Compiler (mlc)
 
+In top-level directory, `mlc`.
+
 ## Build
 
 ```
@@ -7,10 +9,47 @@ mamba env create -f environment_unix.yml
 conda activate mlc
 ```
 
+## Install `src`, or set `PYTHONPATH`
+
+There are two ways to make the code accessible
+and reload it on each run: 
+
+### Alternative 1: Install Editable
+
+into the `mlc` environment
+
+```
+pip install -e .
+```
+
+### Alternative 2: Set `PYTHONPATH`
+
+Either on-the-fly for each run, for example: 
+
+```
+PYTHONPATH="./src:$PYTHONPATH" pytest
+```
+
+or once per terminal session: 
+
+```
+export PYTHONPATH="./src:$PYTHONPATH
+```
+
+before running tests.
+
 ## Run tests:
 
 ```
 pytest
+```
+
+## See the IR
+
+The `-s` option tells `pytest` to display `print` output.
+
+```
+pytest -s
 ```
 
 Plot the computational graph:
