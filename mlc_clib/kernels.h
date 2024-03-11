@@ -25,13 +25,77 @@ typedef float f32;
 
 
 /*
- * There are arrays of rank 1, 2, 3, and 4 in the spec.
+ * There are arrays of rank 1, 2, 3, and 4 in the spec. No fancy
+ * error management for now, just assert that everything is OK.
+ */
+
+
+/*   ____ ___  _   _ _____ ___ ____ _   _  ___  _   _ ____         */
+/*  / ___/ _ \| \ | |_   _|_ _/ ___| | | |/ _ \| | | / ___|        */
+/* | |  | | | |  \| | | |  | | |  _| | | | | | | | | \___ \        */
+/* | |__| |_| | |\  | | |  | | |_| | |_| | |_| | |_| |___) |       */
+/*  \____\___/|_| \_| |_| |___\____|\___/ \___/ \___/|____/        */
+/*  _   _  ___  _   _      ____ _____ ____  ___ ____  _____ ____   */
+/* | \ | |/ _ \| \ | |    / ___|_   _|  _ \|_ _|  _ \| ____|  _ \  */
+/* |  \| | | | |  \| |____\___ \ | | | |_) || || | | |  _| | | | | */
+/* | |\  | |_| | |\  |_____|__) || | |  _ < | || |_| | |___| |_| | */
+/* |_| \_|\___/|_| \_|    |____/ |_| |_| \_\___|____/|_____|____/  */
+
+
+/*
+ * Motivated by https://github.com/ggerganov/ggml/blob/43a6d4af1971ee2912ff7bc2404011ff327b6a60/include/ggml/ggml.h#L556
+ */
+
+
+#define MLC_MAX_RANK    4
+
+#define MLC_COLS_IDX    0
+#define MLC_ROWS_IDX    1
+#define MLC_SHEETS_IDX  2
+#define MLC_BLOCKS_IDX  3
+
+#define MLC_MAX_NAME   64  // actual name < 64; last byte for string-term NULL
+
+// like ggml_tensor at the URL above, just less general.
+typedef struct mlc_array {
+    /*
+     * [42, 0, 0, 0] is a rank-1 array, with 42 columns
+     * [ 7, 6, 0, 0] is a rank-2 array, with 7 columns, 6 rows
+     * [ 7, 6, 4, 0] is a rank-3 array, 7 cols, 6 rows, 4 sheets
+     * [ 7, 6, 4, 3] is a rank-4 array, 7 cols, 6 rows, 4 sheets, 3 blocks
+     */
+    int64_t ne[MLC_MAX_RANK];
+//  size_t  nb[MLC_MAX_RANK];  // strides (unused)
+    void *  data;
+    char    name[MLC_MAX_NAME];
+} MLCA, * pMLCA;
+
+
+/*
+ * Count number of leading non-zero dimensions in ne.
+ */
+int64_t rank(pMLCA pmlca);
+int64_t cols(pMLCA pmlca);
+int64_t rows(pMLCA pmlca);
+int64_t sheets(pMLCA pmlca);
+int64_t blocks(pMLCA pmlca);
+
+
+/*  ____  _   _ _____    ___     _______ ____   */
+/* / ___|| | | | ____|  / \ \   / / ____|  _ \  */
+/* \___ \| |_| |  _|   / _ \ \ / /|  _| | | | | */
+/*  ___) |  _  | |___ / ___ \ V / | |___| |_| | */
+/* |____/|_| |_|_____/_/   \_\_/  |_____|____/  */
+
+
+/* Home-grown K&R
  *
- * Internally, to start, let's have a non-contiguous storage
- * model, where a 2-D array is an array of pointers to 1-D arrays,
- * and 1-D arrays are contiguous. This model can be re- placed
- * with a contiguous model, in which a 2-D array is a contiguous
- * block and its array of pointers pp_storage are strided into it.
+ * Internally, to start, let's have a non-contiguous (sheaved)
+ * storage model, where a 2-D array is an array of pointers to 1-D
+ * arrays, and 1-D arrays are contiguous. This model can be re-
+ * placed with a contiguous model, in which a 2-D array is a
+ * contiguous block and its array of pointers pp_storage are
+ * strided into it.
  */
 
 

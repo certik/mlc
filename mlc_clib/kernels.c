@@ -15,6 +15,70 @@ void test_linkage() {
 }
 
 
+/*   ____ ___  _   _ _____ ___ ____ _   _  ___  _   _ ____         */
+/*  / ___/ _ \| \ | |_   _|_ _/ ___| | | |/ _ \| | | / ___|        */
+/* | |  | | | |  \| | | |  | | |  _| | | | | | | | | \___ \        */
+/* | |__| |_| | |\  | | |  | | |_| | |_| | |_| | |_| |___) |       */
+/*  \____\___/|_| \_| |_| |___\____|\___/ \___/ \___/|____/        */
+/*  _   _  ___  _   _      ____ _____ ____  ___ ____  _____ ____   */
+/* | \ | |/ _ \| \ | |    / ___|_   _|  _ \|_ _|  _ \| ____|  _ \  */
+/* |  \| | | | |  \| |____\___ \ | | | |_) || || | | |  _| | | | | */
+/* | |\  | |_| | |\  |_____|__) || | |  _ < | || |_| | |___| |_| | */
+/* |_| \_|\___/|_| \_|    |____/ |_| |_| \_\___|____/|_____|____/  */
+
+
+/*
+ * Motivated by https://github.com/ggerganov/ggml/blob/43a6d4af1971ee2912ff7bc2404011ff327b6a60/include/ggml/ggml.h#L556
+ */
+
+
+/*
+ * Count number of leading non-zero dimensions in ne.
+ */
+int64_t rank(pMLCA pmlca) {
+    assert(pmlca != NULL);
+    int result = 0;
+    for (int r = 0; r < MLC_MAX_RANK; r++) {
+        if (pmlca->ne[r] == 0) {
+            return result;
+        }
+        result += 1;
+    }
+    return result;
+}
+
+
+int64_t cols(pMLCA pmlca) {
+    assert(pmlca != NULL);
+    return pmlca->ne[MLC_COLS_IDX];
+}
+
+
+int64_t rows(pMLCA pmlca) {
+    assert(pmlca != NULL);
+    return pmlca->ne[MLC_ROWS_IDX];
+}
+
+
+int64_t sheets(pMLCA pmlca) {
+    assert(pmlca != NULL);
+    return pmlca->ne[MLC_SHEETS_IDX];
+}
+
+
+int64_t blocks(pMLCA pmlca) {
+    assert(pmlca != NULL);
+    return pmlca->ne[MLC_BLOCKS_IDX];
+}
+
+
+/*  ____  _   _ _____    ___     _______ ____   */
+/* / ___|| | | | ____|  / \ \   / / ____|  _ \  */
+/* \___ \| |_| |  _|   / _ \ \ / /|  _| | | | | */
+/*  ___) |  _  | |___ / ___ \ V / | |___| |_| | */
+/* |____/|_| |_|_____/_/   \_\_/  |_____|____/  */
+
+
 /*
  * No advanced error handling. Just assert that everything is ok.
  */
