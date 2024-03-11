@@ -4,6 +4,15 @@ In top-level directory, `mlc`.
 
 ## Build
 
+### (Recommended) Install `mamba` and `conda` from `miniforge`.
+
+We have found that the `miniforge` versions of `mamba` and `conda`
+work better than those you get from the `anaconda` graphical 
+installer. You can make any of them work, but this seems 
+smoothest to us.
+
+https://github.com/conda-forge/miniforge
+
 ```
 mamba env create -f environment_unix.yml
 conda activate mlc
