@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# This file was taken from GGML (MIT license):
+# https://github.com/ggerganov/ggml/blob/43a6d4af1971ee2912ff7bc2404011ff327b6a60/examples/mnist/mnist-cnn.py
 import sys
 import gguf
 import numpy as np
