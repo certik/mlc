@@ -18,5 +18,14 @@ int main() {
     A1_free(pa1);
     // DON'T DO THIS!
     // A1_dump(pa1);
+
+    pA2 pa2 = A2_alloc(6, 7);
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 7; j++) {
+            pa2->pp_storage[i][j] = ((f32)((i + 1) * (j + 1)));
+        }
+    }
+    A2_dump(pa2);
+    A2_free(pa2);
     return 0;
 }

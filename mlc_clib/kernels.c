@@ -77,6 +77,7 @@ pA2 A2_alloc(int rows, int cols) {
         result->pp_storage[i] = malloc(cols * sizeof(f32));
         assert(result->pp_storage[i] != NULL);
     }
+    result->cols = cols;
     return result;
 }
 
@@ -84,8 +85,15 @@ pA2 A2_alloc(int rows, int cols) {
 pA2 A2_free(pA2 it) {
     A2_validate(it);
     for (int i = 0; i < it->rows; i++) {
-//        memset(it->pp_storage[i], it->cols, )
+        memset(it->pp_storage[i], 0, it->cols * sizeof(f32));
+        free(it->pp_storage[i]);
     }
+    memset(it->pp_storage, 0, it->rows * sizeof(f32 *));
+    free(it->pp_storage);
+    it->rows = 0;
+    it->cols = 0;
+    free(it);
+    return NULL;
 }
 
 
@@ -101,5 +109,12 @@ void A2_validate(pA2 it) {
 
 
 void A2_dump(pA2 it) {
-
+    A2_validate(it);
+    for (int i = 0; i < it->rows; i++) {
+        printf("\n");
+        for (int j = 0; j < it->cols; j++) {
+            printf("%.0f ", it->pp_storage[i][j]);
+        }
+    }
+    printf("\n");
 }
