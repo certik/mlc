@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
+
 # Neural Network IR (NNIR)
 
 # Basic building blocks for (neural network) graphs for machine learning.
@@ -25,6 +26,7 @@ class Linear:
     out_features: int
     bias: bool
 
+
 ## Convolution Layers
 
 @dataclass
@@ -34,11 +36,13 @@ class Conv2D:
     kernel_size: int
     bias: bool
 
+
 ## Pooling Layers
 
 @dataclass
 class MaxPool2D:
     kernel_size: list[int]
+
 
 ## Normalization Layers
 
@@ -46,10 +50,12 @@ class MaxPool2D:
 class BatchNorm2D:
     num_features: int
 
+
 @dataclass
 class GroupNorm:
     num_groups: int
     num_channels: int
+
 
 ## Non-linear Activations
 
@@ -57,17 +63,21 @@ class GroupNorm:
 class ReLU:
     pass
 
+
 @dataclass
 class Softmax:
     pass
+
 
 @dataclass
 class Tanh:
     pass
 
+
 @dataclass
 class Sigmoid:
     pass
+
 
 ## Utilities
 
@@ -76,10 +86,11 @@ class Flatten:
     start_dim: int
     end_dim: int
 
+
 # Note: This node does not belong to NN IR, rather it belongs to HLIR, which
 # deals with array layouts. This node is not in torch.nn either.
-#@dataclass
-#class Transpose:
+# @dataclass
+# class Transpose:
 #    permutation: list[int]
 
 ## Transformers
@@ -91,6 +102,7 @@ class Transformer:
     num_encoder_layers: int
     num_decoder_layers: int
     dim_feedforward: int
+
 
 ## Containers
 
