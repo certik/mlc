@@ -20,7 +20,7 @@ void test_linkage() {
  */
 pA1 A1_alloc(int dim) {
     assert(dim >= 1);
-    pA1 result = malloc(sizeof(A1));
+    pA1 result = malloc(dim * sizeof(A1));
     assert(result != NULL);
     result->dim = dim;
     result->p_storage = malloc(dim * sizeof(f32));
@@ -63,4 +63,27 @@ void A1_validate(pA1 it) {
     assert(it != NULL);
     assert(it->dim >= 1);
     assert(it->p_storage != NULL);
+}
+
+
+pA2 A2_alloc(int rows, int cols) {
+    assert(rows >= 1);
+    assert(cols >= 1);
+    pA2 result = malloc(sizeof(A2));
+    assert(result != NULL);
+}
+
+
+pA2 A2_free(pA2 it) {
+
+}
+
+
+void A2_validate(pA2 it) {
+
+}
+
+
+void A2_dump(pA2 it) {
+
 }
