@@ -164,6 +164,7 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     out = inp_.copy()
 
     # Conv2D
+    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
     kernel1_ = np.transpose(kernel1, (3,2,0,1))
     out = conv2d(1, 32, 3, kernel1_, bias1, out)
 
@@ -174,6 +175,7 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     out = max_pool_2d(out)
 
     # Conv2D
+    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
     kernel2_ = np.transpose(kernel2, (3,2,0,1))
     out = conv2d(32, 64, 3, kernel2_, bias2, out)
 
@@ -187,8 +189,11 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     out = np.reshape(out, (1600,))
 
     # Linear
+    # (H*W*C_in, N_out) -> (H, W, C_in, N_out)
     dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
+    # (H, W, C_in, N_out) -> (N_out, C_in, H, W)
     dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
+    # (N_out, C_in, H, W) -> (N_out, C_in*H*W)
     dense_w_ = np.reshape(dense_w_, (10, 1600))
     out = np.dot(dense_w_, out) + dense_b
 
