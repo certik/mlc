@@ -535,7 +535,12 @@ int main() {
                     ctx.infos[i].offset
                     );
             if (ctx.infos[i].type == GGML_TYPE_F32) {
-                printf("        First few elements of f32 array:\n");
+                if (ctx.infos[i].ne[0] >= 5) {
+                    printf("        First few elements of f32 array:\n");
+                    float *A = (float*) (ctx.data + ctx.infos[i].offset);
+                    printf("            [%f, %f, %f, %f, %f]\n",
+                            A[0], A[1], A[2], A[3], A[4]);
+                }
             }
         }
     }
