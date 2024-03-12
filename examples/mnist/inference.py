@@ -8,7 +8,7 @@ import torch
 print("    Done.")
 
 
-N_iter = 1
+N_iter = 10
 N_test = 10000
 
 
@@ -46,6 +46,7 @@ def gguf_to_array(g, expected_name):
     if g.name != expected_name:
         raise Exception("Expected array name `%s`, got `%s`" % \
                 (expected_name, g.name))
+    # The GGUF format stores the shape in reversed order
     return np.reshape(g.data, np.flip(g.shape))
 
 def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
@@ -65,31 +66,23 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.Softmax(dim=0),
                 )
 
+            kernel1_ = np.transpose(kernel1, (3,2,0,1))
             self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel1.copy()).float())
-
-            # The bias is duplicated in the file
-            bias1_ = np.transpose(bias1, (3,2,1,0))
-            bias1_ = bias1_[0,0,:,0].copy()
+                    kernel1_.copy()))
             self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias1_).float())
-
+                    bias1.copy()))
+            kernel2_ = np.transpose(kernel2, (3,2,0,1))
             self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel2.copy()).float())
-
-            # The bias is duplicated in the file
-            bias2_ = np.transpose(bias2, (3,2,1,0))
-            bias2_ = bias2_[0,0,:,0].copy()
+                    kernel2_.copy()))
             self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias2_).float())
-
-            dense_w_ = np.transpose(dense_w, (1,0))
-            dense_w_ = np.transpose(dense_w_, (1, 0)).copy()
+                    bias2.copy()))
+            dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
+            dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
+            dense_w_ = np.reshape(dense_w_, (10, 1600))
             self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
-                    dense_w_).float())
-
+                    dense_w_.copy()))
             self.model[7].bias = torch.nn.Parameter(torch.from_numpy(
-                    dense_b.copy()).float())
+                    dense_b.copy()))
 
         def forward(self, x):
             return self.model(x)
@@ -97,20 +90,19 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     model = Model()
-    #import IPython
-    #IPython.embed()
-    inp = np.expand_dims(inp, 0)
-    torch_inp = torch.tensor(inp)
+    inp_ = np.expand_dims(inp, 0)
+    torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
     print("Output shape:", out.shape)
     assert out.shape == (10,)
+    print("PT:", out)
+    print("PT max:", out.argmax())
 
-    out_tf = tf_model(np.expand_dims(inp, -1))
-    print(out_tf)
-    print(out_tf.numpy())
-    print(out_tf.numpy().argmax())
+    out_tf = tf_model(np.expand_dims(inp, 0))
+    print("TF:", out_tf)
     print("TF max:", out_tf.numpy().argmax())
+
     return out
 
 
