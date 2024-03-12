@@ -127,6 +127,37 @@ def max_pool_2d(x):
                 r[b, i, j] = np.max(x[b, 2*i:2*i+2, 2*j:2*j+2])
     return r
 
+# (h, w)
+def conv2d_kernel(kernel_size, weight, x):
+    assert len(weight.shape) == 2
+    assert weight.shape[0] == kernel_size
+    assert weight.shape[1] == kernel_size
+    assert len(x.shape) == 2
+    in_h, in_w = x.shape
+    out_w = in_w - (kernel_size-1)
+    out_h = in_h - (kernel_size-1)
+    out = np.empty((out_h, out_w), dtype=x.dtype)
+
+    assert kernel_size == 3
+    for h in range(out_h):
+        for w in range(out_w):
+            out[h,w] = np.sum(weight*x[h-1+1:h+2+1,w-1+1:w+2+1])
+    return out
+
+# (batch, channel, h, w)
+def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
+    in_channels_x, in_h, in_w = x.shape
+    assert in_channels == in_channels_x
+    out_w = in_w - (kernel_size-1)
+    out_h = in_h - (kernel_size-1)
+    out = np.empty((out_channels, out_h, out_w), dtype=x.dtype)
+    for c in range(out_channels):
+        s = np.zeros((out_h, out_w), dtype=x.dtype)
+        for k in range(in_channels):
+            s += conv2d_kernel(kernel_size, weight[c,k,:,:], x[k,:,:])
+        out[c, :, :] = bias[c] + s
+    return out
+
 def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     class Model(torch.nn.Module):
         def __init__(self):
@@ -135,7 +166,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.Conv2d(1, 32, 3, bias=True),
                 torch.nn.ReLU(),
                 torch.nn.MaxPool2d((2, 2)),
-                torch.nn.Conv2d(32, 64, 3, bias=True),
                 )
 
             kernel1_ = np.transpose(kernel1, (3,2,0,1))
@@ -143,11 +173,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                     kernel1_.copy()))
             self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
                     bias1.copy()))
-            kernel2_ = np.transpose(kernel2, (3,2,0,1))
-            self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel2_.copy()))
-            self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias2.copy()))
 
         def forward(self, x):
             return self.model(x)
@@ -159,6 +184,10 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
+
+    # Conv2D
+    kernel2_ = np.transpose(kernel2, (3,2,0,1))
+    out = conv2d(32, 64, 3, kernel2_, bias2, out)
 
     # ReLU
     out = relu(out)
