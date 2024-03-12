@@ -23,6 +23,8 @@ void test_4D_MLCA();
 #define GGUF_MAGIC "GGUF"
 #define GGUF_MAX_DIMS           4
 #define GGUF_DEFAULT_ALIGNMENT 32
+#define GGUF_PAD(x, n) (((x) + (n) - 1) & ~((n) - 1))
+
 
 
 struct gguf_str {
@@ -164,6 +166,66 @@ struct gguf_tensor_info {
     size_t size;
 };
 
+typedef struct {
+    const char      * type_name;
+    int               blck_size;
+    size_t            type_size;
+    bool              is_quantized;
+    int64_t           nrows; // number of rows to process simultaneously;
+} ggml_type_traits_t;
+
+
+static const ggml_type_traits_t type_traits[GGML_TYPE_COUNT] = {
+    [GGML_TYPE_I8] = {
+        .type_name                = "i8",
+        .blck_size                = 1,
+        .type_size                = sizeof(int8_t),
+        .is_quantized             = false,
+    },
+    [GGML_TYPE_I16] = {
+        .type_name                = "i16",
+        .blck_size                = 1,
+        .type_size                = sizeof(int16_t),
+        .is_quantized             = false,
+    },
+    [GGML_TYPE_I32] = {
+        .type_name                = "i32",
+        .blck_size                = 1,
+        .type_size                = sizeof(int32_t),
+        .is_quantized             = false,
+    },
+    [GGML_TYPE_F32] = {
+        .type_name                = "f32",
+        .blck_size                = 1,
+        .type_size                = sizeof(float),
+        .is_quantized             = false,
+        .nrows                    = 1,
+    },
+    [GGML_TYPE_F16] = {
+        .type_name                = "f16",
+        .blck_size                = 1,
+        .type_size                = sizeof(float)/2,
+        .is_quantized             = false,
+        .nrows                    = 1,
+    },
+};
+
+int ggml_blck_size(enum ggml_type type) {
+    return type_traits[type].blck_size;
+}
+
+size_t ggml_type_size(enum ggml_type type) {
+    return type_traits[type].type_size;
+}
+
+size_t ggml_row_size(enum ggml_type type, int64_t ne) {
+    assert(ne % ggml_blck_size(type) == 0);
+    return ggml_type_size(type)*ne/ggml_blck_size(type);
+}
+
+const char * ggml_type_name(enum ggml_type type) {
+    return type_traits[type].type_name;
+}
 
 static bool gguf_fread_el(FILE * file, void * dst, size_t size,
         size_t * offset)
@@ -397,6 +459,33 @@ int gguf_read(const char *fname, struct gguf_context *ctx)
     // store the current file offset - this is where the data section starts
     ctx->offset = offset;
 
+    // compute the total size of the data section, taking into account the alignment
+    {
+        ctx->size = 0;
+        for (uint64_t i = 0; i < ctx->header.n_tensors; ++i) {
+            struct gguf_tensor_info * info = &ctx->infos[i];
+
+            const int64_t ne =
+                (int64_t) info->ne[0] *
+                (int64_t) info->ne[1] *
+                (int64_t) info->ne[2] *
+                (int64_t) info->ne[3];
+
+            /*
+            if (ne % ggml_blck_size(info->type) != 0) {
+                fprintf(stderr, "%s: array '%s' of type %d (%s) number of elements (%" PRId64 ") is not a multiple of block size (%d)\n",
+                        __func__, info->name.data, (int)info->type, ggml_type_name(info->type), ne, ggml_blck_size(info->type));
+                fclose(file);
+                return 11;
+            }
+            */
+
+            const size_t size_cur = ggml_row_size(info->type, ne);
+
+            ctx->size += GGUF_PAD(size_cur, ctx->alignment);
+        }
+    }
+
 
     return 0;
 }
@@ -435,6 +524,8 @@ int main() {
                     ctx.infos[i].offset
                     );
         }
+        printf("Data Offset: %zu\n", ctx.offset);
+        printf("Data Size:   %zu\n", ctx.size);
     }
     return r;
 }
