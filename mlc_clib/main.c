@@ -471,14 +471,12 @@ int gguf_read(const char *fname, struct gguf_context *ctx)
                 (int64_t) info->ne[2] *
                 (int64_t) info->ne[3];
 
-            /*
             if (ne % ggml_blck_size(info->type) != 0) {
-                fprintf(stderr, "%s: array '%s' of type %d (%s) number of elements (%" PRId64 ") is not a multiple of block size (%d)\n",
+                fprintf(stderr, "%s: array '%s' of type %d (%s) number of elements (%llu) is not a multiple of block size (%d)\n",
                         __func__, info->name.data, (int)info->type, ggml_type_name(info->type), ne, ggml_blck_size(info->type));
                 fclose(file);
                 return 11;
             }
-            */
 
             const size_t size_cur = ggml_row_size(info->type, ne);
 
