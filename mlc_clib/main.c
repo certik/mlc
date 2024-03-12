@@ -91,12 +91,43 @@ struct gguf_context {
     void * data;
 };
 
+#define GGUF_MAGIC "GGUF"
+
+static bool gguf_fread_el(FILE * file, void * dst, size_t size,
+        size_t * offset)
+{
+    const size_t n = fread(dst, 1, size, file);
+    *offset += n;
+    return n == size;
+}
+
+
+int gguf_read(const char *fname)
+{
+    FILE * file = fopen(fname, "rb");
+    if (!file) {
+        fprintf(stderr, "%s: failed to open `%s`\n", __func__, fname);
+        return 1;
+    }
+    size_t offset = 0;
+    char magic[4];
+    {
+        gguf_fread_el(file, &magic, sizeof(magic), &offset);
+        for (uint32_t i = 0; i < sizeof(magic); i++) {
+            if (magic[i] != GGUF_MAGIC[i]) {
+                fprintf(stderr, "%s: invalid magic characters '%c%c%c%c'\n", __func__, magic[0], magic[1], magic[2], magic[3]);
+                fclose(file);
+                return 2;
+            }
+        }
+
+    }
+    return 0;
+}
+
 int main() {
-    int fd = open("examples/mnist/mnist-cnn-model.gguf", O_RDONLY);
-    FILE * f = fdopen(fd, "r");
-    int fclosed = fclose(f);
-    assert(fclosed == 0);
-    return fclosed;
+    int r = gguf_read("examples/mnist/mnist-cnn-model.gguf");
+    return r;
 }
 
 void test_1D_MLCA() {
