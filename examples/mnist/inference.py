@@ -105,6 +105,11 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     return out
 
+# (10,) -> (10,)
+def softmax(x):
+    exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+
 def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     class Model(torch.nn.Module):
         def __init__(self):
@@ -118,7 +123,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.MaxPool2d((2, 2)),
                 torch.nn.Flatten(0, -1),
                 torch.nn.Linear(1600, 10, bias=True),
-                torch.nn.Softmax(dim=0),
                 )
 
             kernel1_ = np.transpose(kernel1, (3,2,0,1))
@@ -149,6 +153,9 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
+
+    out = softmax(out)
+
     print("Output shape:", out.shape)
     assert out.shape == (10,)
     print("PT:", out)
