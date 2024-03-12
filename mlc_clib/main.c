@@ -349,6 +349,17 @@ int main() {
         printf("Version: %d\n", ctx.header.version);
         printf("Number of arrays: %llu\n", ctx.header.n_tensors);
         printf("Number of kv pairs: %llu\n", ctx.header.n_kv);
+        for (size_t i=0; i < ctx.header.n_kv; i++) {
+            char tmp[256];
+            strncpy(tmp, ctx.kv[i].key.data, ctx.kv[i].key.n);
+            tmp[ctx.kv[i].key.n] = 0;
+            char v[256] = "";
+            if (ctx.kv[i].type == GGUF_TYPE_STRING) {
+                strncpy(v, ctx.kv[i].value.str.data, ctx.kv[i].value.str.n);
+                v[ctx.kv[i].value.str.n] = 0;
+            }
+            printf("    %zu: %s = %s\n", i, tmp, v);
+        }
     }
     return r;
 }
