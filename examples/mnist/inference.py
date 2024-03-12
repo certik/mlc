@@ -2,6 +2,7 @@ print("Importing Python packages...")
 import random
 import numpy as np
 from tensorflow import keras
+import tensorflow as tf
 from gguf.gguf_reader import GGUFReader
 import torch
 print("    Done.")
@@ -48,6 +49,7 @@ def gguf_to_array(g, expected_name):
     return np.reshape(g.data, np.flip(g.shape))
 
 def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+    tf_model = keras.models.load_model("mnist-cnn-model")
     class Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
@@ -95,12 +97,20 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     model = Model()
+    #import IPython
+    #IPython.embed()
     inp = np.expand_dims(inp, 0)
     torch_inp = torch.tensor(inp)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
     print("Output shape:", out.shape)
     assert out.shape == (10,)
+
+    out_tf = tf_model(np.expand_dims(inp, -1))
+    print(out_tf)
+    print(out_tf.numpy())
+    print(out_tf.numpy().argmax())
+    print("TF max:", out_tf.numpy().argmax())
     return out
 
 
