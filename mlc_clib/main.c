@@ -519,6 +519,8 @@ int main() {
             }
             printf("    %zu: %s = %s\n", i, tmp, v);
         }
+        printf("Data Offset: %zu\n", ctx.offset);
+        printf("Data Size:   %zu\n", ctx.size);
         printf("Number of arrays: %llu\n", ctx.header.n_tensors);
         for (size_t i=0; i < ctx.header.n_tensors; i++) {
             char tmp[256];
@@ -536,8 +538,6 @@ int main() {
                 printf("        First few elements of f32 array:\n");
             }
         }
-        printf("Data Offset: %zu\n", ctx.offset);
-        printf("Data Size:   %zu\n", ctx.size);
     }
     return r;
 }
