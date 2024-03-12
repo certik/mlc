@@ -532,6 +532,9 @@ int main() {
                     ggml_type_name(ctx.infos[i].type),
                     ctx.infos[i].offset
                     );
+            if (ctx.infos[i].type == GGML_TYPE_F32) {
+                printf("        First few elements of f32 array:\n");
+            }
         }
         printf("Data Offset: %zu\n", ctx.offset);
         printf("Data Size:   %zu\n", ctx.size);
