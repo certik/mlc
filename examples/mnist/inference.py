@@ -202,8 +202,8 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     print("Output shape:", out.shape)
     assert out.shape == (10,)
-    print("PT:", out)
-    print("PT max:", out.argmax())
+    print("NumPy:", out)
+    print("NumPy max:", out.argmax())
 
     return out
 
