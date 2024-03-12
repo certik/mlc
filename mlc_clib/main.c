@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <assert.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "kernels.h"
 
@@ -13,13 +17,86 @@ void test_4D_MLCA();
  * leaks --atExit -- ./mlc_clib
  */
 
+struct gguf_str {
+    uint64_t n;  // GGUFv2
+    char * data;
+};
+
+enum gguf_type {
+    GGUF_TYPE_UINT8   = 0,
+    GGUF_TYPE_INT8    = 1,
+    GGUF_TYPE_UINT16  = 2,
+    GGUF_TYPE_INT16   = 3,
+    GGUF_TYPE_UINT32  = 4,
+    GGUF_TYPE_INT32   = 5,
+    GGUF_TYPE_FLOAT32 = 6,
+    GGUF_TYPE_BOOL    = 7,
+    GGUF_TYPE_STRING  = 8,
+    GGUF_TYPE_ARRAY   = 9,
+    GGUF_TYPE_UINT64  = 10,
+    GGUF_TYPE_INT64   = 11,
+    GGUF_TYPE_FLOAT64 = 12,
+    GGUF_TYPE_COUNT,       // marks the end of the enum
+};
+
+union gguf_value {
+    uint8_t  uint8;
+    int8_t   int8;
+    uint16_t uint16;
+    int16_t  int16;
+    uint32_t uint32;
+    int32_t  int32;
+    float    float32;
+    uint64_t uint64;
+    int64_t  int64;
+    double   float64;
+    bool     bool_;
+
+    struct gguf_str str;
+
+    struct {
+        enum gguf_type type;
+
+        uint64_t n;  // GGUFv2
+        void * data;
+    } arr;
+};
+
+struct gguf_kv {
+    struct gguf_str key;
+
+    enum  gguf_type  type;
+    union gguf_value value;
+};
+
+struct gguf_header {
+    char magic[4];
+
+    uint32_t version;
+    uint64_t n_tensors; // GGUFv2
+    uint64_t n_kv;      // GGUFv2
+};
+
+struct gguf_context {
+    struct gguf_header header;
+
+    struct gguf_kv          * kv;
+    struct gguf_tensor_info * infos;
+
+    size_t alignment;
+    size_t offset;    // offset of `data` from beginning of file
+    size_t size;      // size of `data` in bytes
+
+    //uint8_t * padding;
+    void * data;
+};
+
 int main() {
-    test_linkage();
-    test_1D_MLCA();
-    test_2D_MLCA();
-    test_3D_MLCA();
-    test_4D_MLCA();
-    return 0;
+    int fd = open("examples/mnist/mnist-cnn-model.gguf", O_RDONLY);
+    FILE * f = fdopen(fd, "r");
+    int fclosed = fclose(f);
+    assert(fclosed == 0);
+    return fclosed;
 }
 
 void test_1D_MLCA() {

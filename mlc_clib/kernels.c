@@ -366,37 +366,3 @@ void dumpMLCA(pMLCA pmlca) {
 }
 
 
-/*
- * A typical conv_kernel1 is 5 x 5. The Input must be reduced and
- * on the left and on the right. The actual innermost convolution
- * for MNIST is a 5x5 boxcar kernel on a 28x28 grid, and,
- * actually, 1x32 of such things. The beginning index of the
- * raster process is 2, and the ending index is 25 = (cols - 1) -
- * 2. For a square boxcar of odd dimensions n x n, let b =
- * floor(n/2) =def= n//2. This is 2 when n == 5. The raster
- * summing begins at index b and ends at index (col - 1) - b
- * (inclusive). The results are, in general of dims (rows - 2b)
- * and (cols - 2b)
- *
- *                             1                   2
- *         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7
- *      0 |. . . . .|. . . . . . . . . . . . . . . . . .|. . . . .|
- *      1 |. . . . .|. . . . . . . . . . . . . . . . . .|. . . . .|
- *      2 |. . o . .|. .~~~~>. . . .~~~~>. . . .~~~~>. .|. . o . .|
- *      3 |. . . . .|. . . . . . . . . . . . . . . . . .|. . . . .|
- *      4 |. . . . .|. . . . . . . . . . . . . . . . . .|. . . . .|
- *      5  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      6  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *          .       .       .       .       .       .       .
- *            .       .       .       .       .       .       .
- *              .       .       .       .       .       .       .
- *     20  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      1  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      2  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      3  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      4  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      5  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      6  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- *      7  . . . . . . . . . . . . . . . . . . . . . . . . . . . .
- */
-
