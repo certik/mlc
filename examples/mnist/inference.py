@@ -159,29 +159,14 @@ def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
     return out
 
 def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
-    class Model(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.model = torch.nn.Sequential (
-                torch.nn.Conv2d(1, 32, 3, bias=True),
-                )
-
-            kernel1_ = np.transpose(kernel1, (3,2,0,1))
-            self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel1_.copy()))
-            self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias1.copy()))
-
-        def forward(self, x):
-            return self.model(x)
-
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
-    model = Model()
     inp_ = np.expand_dims(inp, 0)
-    torch_inp = torch.tensor(inp_)
-    torch_out = model(torch_inp)
-    out = torch_out.detach().numpy()
+    out = inp_.copy()
+
+    # Conv2D
+    kernel1_ = np.transpose(kernel1, (3,2,0,1))
+    out = conv2d(1, 32, 3, kernel1_, bias1, out)
 
     # ReLU
     out = relu(out)
