@@ -46,6 +46,7 @@ def gguf_to_array(g, expected_name):
     if g.name != expected_name:
         raise Exception("Expected array name `%s`, got `%s`" % \
                 (expected_name, g.name))
+    # The GGUF format stores the shape in reversed order
     return np.reshape(g.data, np.flip(g.shape))
 
 def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
@@ -65,31 +66,23 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.Softmax(dim=0),
                 )
 
+            kernel1_ = np.transpose(kernel1, (3,2,0,1))
             self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel1.copy()).float())
-
-            # The bias is duplicated in the file
-            bias1_ = np.transpose(bias1, (3,2,1,0))
-            bias1_ = bias1_[0,0,:,0].copy()
+                    kernel1_.copy()))
             self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias1_).float())
-
+                    bias1.copy()))
+            kernel2_ = np.transpose(kernel2, (3,2,0,1))
             self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel2.copy()).float())
-
-            # The bias is duplicated in the file
-            bias2_ = np.transpose(bias2, (3,2,1,0))
-            bias2_ = bias2_[0,0,:,0].copy()
+                    kernel2_.copy()))
             self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias2_).float())
-
-            dense_w_ = np.transpose(dense_w, (1,0))
-            dense_w_ = np.transpose(dense_w_, (1, 0)).copy()
+                    bias2.copy()))
+            dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
+            dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
+            dense_w_ = np.reshape(dense_w_, (10, 1600))
             self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
-                    dense_w_).float())
-
+                    dense_w_.copy()))
             self.model[7].bias = torch.nn.Parameter(torch.from_numpy(
-                    dense_b.copy()).float())
+                    dense_b.copy()))
 
         def forward(self, x):
             return self.model(x)
@@ -97,20 +90,116 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     model = Model()
-    #import IPython
-    #IPython.embed()
-    inp = np.expand_dims(inp, 0)
-    torch_inp = torch.tensor(inp)
+    inp_ = np.expand_dims(inp, 0)
+    torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
     print("Output shape:", out.shape)
     assert out.shape == (10,)
+    print("PT:", out)
+    print("PT max:", out.argmax())
 
-    out_tf = tf_model(np.expand_dims(inp, -1))
-    print(out_tf)
-    print(out_tf.numpy())
-    print(out_tf.numpy().argmax())
+    out_tf = tf_model(np.expand_dims(inp, 0))
+    print("TF:", out_tf)
     print("TF max:", out_tf.numpy().argmax())
+
+    return out
+
+# (10,) -> (10,)
+def softmax(x):
+    exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+
+def relu(x):
+    y = x.copy()
+    y[x < 0] = 0
+    return y
+
+# (batch, w, h)
+def max_pool_2d(x):
+    batch, w, h = x.shape
+    w2 = w//2
+    h2 = h//2
+    r = np.empty((batch, w2, h2), dtype=x.dtype)
+    for b in range(batch):
+        for i in range(w2):
+            for j in range(h2):
+                r[b, i, j] = np.max(x[b, 2*i:2*i+2, 2*j:2*j+2])
+    return r
+
+# (h, w)
+def conv2d_kernel(kernel_size, weight, x):
+    assert len(weight.shape) == 2
+    assert weight.shape[0] == kernel_size
+    assert weight.shape[1] == kernel_size
+    assert len(x.shape) == 2
+    in_h, in_w = x.shape
+    out_w = in_w - (kernel_size-1)
+    out_h = in_h - (kernel_size-1)
+    out = np.empty((out_h, out_w), dtype=x.dtype)
+
+    for h in range(out_h):
+        for w in range(out_w):
+            out[h,w] = np.sum(weight*x[h:h+kernel_size,w:w+kernel_size])
+    return out
+
+# (batch, channel, h, w)
+def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
+    in_channels_x, in_h, in_w = x.shape
+    assert in_channels == in_channels_x
+    out_w = in_w - (kernel_size-1)
+    out_h = in_h - (kernel_size-1)
+    out = np.empty((out_channels, out_h, out_w), dtype=x.dtype)
+    for c in range(out_channels):
+        s = np.zeros((out_h, out_w), dtype=x.dtype)
+        for k in range(in_channels):
+            s += conv2d_kernel(kernel_size, weight[c,k,:,:], x[k,:,:])
+        out[c, :, :] = bias[c] + s
+    return out
+
+def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+    print("Input shape:", inp.shape)
+    assert inp.shape == (28, 28)
+    inp_ = np.expand_dims(inp, 0)
+    out = inp_.copy()
+
+    # Conv2D
+    kernel1_ = np.transpose(kernel1, (3,2,0,1))
+    out = conv2d(1, 32, 3, kernel1_, bias1, out)
+
+    # ReLU
+    out = relu(out)
+
+    # MaxPool2D
+    out = max_pool_2d(out)
+
+    # Conv2D
+    kernel2_ = np.transpose(kernel2, (3,2,0,1))
+    out = conv2d(32, 64, 3, kernel2_, bias2, out)
+
+    # ReLU
+    out = relu(out)
+
+    # MaxPool2D
+    out = max_pool_2d(out)
+
+    # Flatten
+    out = np.reshape(out, (1600,))
+
+    # Linear
+    dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
+    dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
+    dense_w_ = np.reshape(dense_w_, (10, 1600))
+    out = np.dot(dense_w_, out) + dense_b
+
+    # Softmax
+    out = softmax(out)
+
+    print("Output shape:", out.shape)
+    assert out.shape == (10,)
+    print("PT:", out)
+    print("PT max:", out.argmax())
+
     return out
 
 
@@ -138,9 +227,14 @@ def main():
 
         x = run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
         infer_val = np.argmax(x)
-
         print("Inferred value:", infer_val)
         print("Digit probabilities:", x)
+
+        print("---------")
+        x = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        infer_val = np.argmax(x)
+        print("NumPy Inferred value:", infer_val)
+        print("NumPy Digit probabilities:", x)
 
 
 if __name__ == '__main__':
