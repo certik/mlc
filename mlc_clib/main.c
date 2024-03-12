@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "kernels.h"
 
@@ -102,7 +103,7 @@ static bool gguf_fread_el(FILE * file, void * dst, size_t size,
 }
 
 
-int gguf_read(const char *fname)
+int gguf_read(const char *fname, struct gguf_context *ctx)
 {
     FILE * file = fopen(fname, "rb");
     if (!file) {
@@ -110,8 +111,10 @@ int gguf_read(const char *fname)
         return 1;
     }
     size_t offset = 0;
-    char magic[4];
+
+    // Magic
     {
+        char magic[4];
         gguf_fread_el(file, &magic, sizeof(magic), &offset);
         for (uint32_t i = 0; i < sizeof(magic); i++) {
             if (magic[i] != GGUF_MAGIC[i]) {
@@ -120,13 +123,23 @@ int gguf_read(const char *fname)
                 return 2;
             }
         }
+        strncpy(ctx->header.magic, magic, 4);
+    }
 
+    // Header
+    {
     }
     return 0;
 }
 
 int main() {
-    int r = gguf_read("examples/mnist/mnist-cnn-model.gguf");
+    struct gguf_context ctx;
+    int r = gguf_read("examples/mnist/mnist-cnn-model.gguf", &ctx);
+    if (r == 0) {
+        printf("File read successfuly.\n");
+        printf("Magic:'%c%c%c%c'\n", ctx.header.magic[0], ctx.header.magic[1],
+                ctx.header.magic[2], ctx.header.magic[3]);
+    }
     return r;
 }
 
