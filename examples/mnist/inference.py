@@ -121,7 +121,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.Conv2d(32, 64, 3, bias=True),
                 torch.nn.ReLU(),
                 torch.nn.MaxPool2d((2, 2)),
-                torch.nn.Flatten(0, -1),
                 )
 
             kernel1_ = np.transpose(kernel1, (3,2,0,1))
@@ -145,6 +144,9 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
+
+    # Flatten
+    out = np.reshape(out, (1600,))
 
     # Linear
     dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
