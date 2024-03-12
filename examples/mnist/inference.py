@@ -8,7 +8,7 @@ import torch
 print("    Done.")
 
 
-N_iter = 10
+N_iter = 1
 N_test = 10000
 
 
@@ -105,6 +105,103 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     return out
 
+# (10,) -> (10,)
+def softmax(x):
+    exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+
+def relu(x):
+    y = x.copy()
+    y[x < 0] = 0
+    return y
+
+# (batch, w, h)
+def max_pool_2d(x):
+    batch, w, h = x.shape
+    w2 = w//2
+    h2 = h//2
+    r = np.empty((batch, w2, h2), dtype=x.dtype)
+    for b in range(batch):
+        for i in range(w2):
+            for j in range(h2):
+                r[b, i, j] = np.max(x[b, 2*i:2*i+2, 2*j:2*j+2])
+    return r
+
+# (h, w)
+def conv2d_kernel(kernel_size, weight, x):
+    assert len(weight.shape) == 2
+    assert weight.shape[0] == kernel_size
+    assert weight.shape[1] == kernel_size
+    assert len(x.shape) == 2
+    in_h, in_w = x.shape
+    out_w = in_w - (kernel_size-1)
+    out_h = in_h - (kernel_size-1)
+    out = np.empty((out_h, out_w), dtype=x.dtype)
+
+    for h in range(out_h):
+        for w in range(out_w):
+            out[h,w] = np.sum(weight*x[h:h+kernel_size,w:w+kernel_size])
+    return out
+
+# (batch, channel, h, w)
+def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
+    in_channels_x, in_h, in_w = x.shape
+    assert in_channels == in_channels_x
+    out_w = in_w - (kernel_size-1)
+    out_h = in_h - (kernel_size-1)
+    out = np.empty((out_channels, out_h, out_w), dtype=x.dtype)
+    for c in range(out_channels):
+        s = np.zeros((out_h, out_w), dtype=x.dtype)
+        for k in range(in_channels):
+            s += conv2d_kernel(kernel_size, weight[c,k,:,:], x[k,:,:])
+        out[c, :, :] = bias[c] + s
+    return out
+
+def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+    print("Input shape:", inp.shape)
+    assert inp.shape == (28, 28)
+    inp_ = np.expand_dims(inp, 0)
+    out = inp_.copy()
+
+    # Conv2D
+    kernel1_ = np.transpose(kernel1, (3,2,0,1))
+    out = conv2d(1, 32, 3, kernel1_, bias1, out)
+
+    # ReLU
+    out = relu(out)
+
+    # MaxPool2D
+    out = max_pool_2d(out)
+
+    # Conv2D
+    kernel2_ = np.transpose(kernel2, (3,2,0,1))
+    out = conv2d(32, 64, 3, kernel2_, bias2, out)
+
+    # ReLU
+    out = relu(out)
+
+    # MaxPool2D
+    out = max_pool_2d(out)
+
+    # Flatten
+    out = np.reshape(out, (1600,))
+
+    # Linear
+    dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
+    dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
+    dense_w_ = np.reshape(dense_w_, (10, 1600))
+    out = np.dot(dense_w_, out) + dense_b
+
+    # Softmax
+    out = softmax(out)
+
+    print("Output shape:", out.shape)
+    assert out.shape == (10,)
+    print("PT:", out)
+    print("PT max:", out.argmax())
+
+    return out
+
 
 def main():
     print("Loading MNIST test images...")
@@ -130,9 +227,14 @@ def main():
 
         x = run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
         infer_val = np.argmax(x)
-
         print("Inferred value:", infer_val)
         print("Digit probabilities:", x)
+
+        print("---------")
+        x = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        infer_val = np.argmax(x)
+        print("NumPy Inferred value:", infer_val)
+        print("NumPy Digit probabilities:", x)
 
 
 if __name__ == '__main__':
