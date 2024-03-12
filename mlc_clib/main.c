@@ -486,6 +486,17 @@ int gguf_read(const char *fname, struct gguf_context *ctx)
         }
     }
 
+    // Read Data
+    {
+        bool ok = true;
+        ctx->data = malloc(ctx->size);
+        ok = ok && gguf_fread_el(file, ctx->data, ctx->size, &offset);
+        if (!ok) {
+            fprintf(stderr, "%s: failed to read array data\n", __func__);
+            fclose(file);
+            return 12;
+        }
+    }
 
     return 0;
 }
