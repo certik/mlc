@@ -122,7 +122,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.ReLU(),
                 torch.nn.MaxPool2d((2, 2)),
                 torch.nn.Flatten(0, -1),
-                torch.nn.Linear(1600, 10, bias=True),
                 )
 
             kernel1_ = np.transpose(kernel1, (3,2,0,1))
@@ -135,13 +134,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                     kernel2_.copy()))
             self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
                     bias2.copy()))
-            dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
-            dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
-            dense_w_ = np.reshape(dense_w_, (10, 1600))
-            self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
-                    dense_w_.copy()))
-            self.model[7].bias = torch.nn.Parameter(torch.from_numpy(
-                    dense_b.copy()))
 
         def forward(self, x):
             return self.model(x)
@@ -154,6 +146,13 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
 
+    # Linear
+    dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
+    dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
+    dense_w_ = np.reshape(dense_w_, (10, 1600))
+    out = np.dot(dense_w_, out) + dense_b
+
+    # Softmax
     out = softmax(out)
 
     print("Output shape:", out.shape)
