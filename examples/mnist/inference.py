@@ -99,7 +99,7 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     print("PT:", out)
     print("PT max:", out.argmax())
 
-    out_tf = tf_model(np.expand_dims(inp, 0))
+    out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
     print("TF:", out_tf)
     print("TF max:", out_tf.numpy().argmax())
 
