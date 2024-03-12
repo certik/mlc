@@ -2,10 +2,10 @@
 
 #include "kernels.h"
 
-void test_4D();
-void test_3D();
-void test_2D();
-void test_1D();
+void test_1D_MLCA();
+void test_2D_MLCA();
+void test_3D_MLCA();
+void test_4D_MLCA();
 
 /*
  * On Mac, run "leaks" on the executable.
@@ -15,70 +15,73 @@ void test_1D();
 
 int main() {
     test_linkage();
-    test_1D();
-    test_2D();
-    test_3D();
-    test_4D();
+    test_1D_MLCA();
+    test_2D_MLCA();
+    test_3D_MLCA();
+    test_4D_MLCA();
     return 0;
 }
 
-void test_1D() {
-    int cols = 42;
-    pA1 pa1 = A1_alloc(cols);
-    for (int i = 0; i < cols; i++) {
-        pa1->p_storage[i] = ((f32)(i));
+void test_1D_MLCA() {
+    int64_t cols = 42;
+    pMLCA pmlca = alloc1D(cols);
+    for (int64_t col = 0; col < cols; col++) {
+        put1D(pmlca, col, ((f32)(col)));
     }
-    A1_dump(pa1);
-    A1_free(pa1);
-    // DON'T DO THIS!
-    // A1_dump(pa1);
+    dumpMLCA(pmlca);
+    freeMLCA(pmlca);
 }
 
-void test_2D() {
-    int cols = 7;
-    int rows = 6;
-    pA2 pa2 = A2_alloc(rows, cols);
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            pa2->pp_storage[i][j] = ((f32)((i + 1) * (j + 1)));
+void test_2D_MLCA() {
+    int64_t cols = 7;
+    int64_t rows = 6;
+    pMLCA pmlca = alloc2D(rows, cols);
+    for (int row = 0; row < rows; row++) {
+        for (int col = 0; col < cols; col++) {
+            put2D(pmlca, row, col,
+                  ((f32)((row + 1) * (col + 1))));
         }
     }
-    A2_dump(pa2);
-    A2_free(pa2);
+    dumpMLCA(pmlca);
+    freeMLCA(pmlca);
 }
 
-void test_3D() {
-    int sheets = 4;
-    int cols = 7;
-    int rows = 6;
-    pA3 pa3 = A3_alloc(rows, cols, sheets);
-    for (int k = 0; k < sheets; k++) {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                pa3->ppp_storage[k][i][j] = ((f32) ((i + 1) * (j + 1) * (k + 1)));
+void test_3D_MLCA() {
+    int64_t sheets = 4;
+    int64_t cols = 7;
+    int64_t rows = 6;
+    pMLCA pmlca = alloc3D(sheets, rows, cols);
+    for (int sheet = 0; sheet < sheets; sheet++) {
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                put3D(pmlca,
+                      sheet, row, col,
+                      ((f32)((sheet + 1) * (row + 1) * (col + 1))));
             }
         }
     }
-    A3_dump(pa3);
-    A3_free(pa3);
+    dumpMLCA(pmlca);
+    freeMLCA(pmlca);
 }
 
-void test_4D() {
-    int blocks = 3;
-    int sheets = 4;
-    int cols = 7;
-    int rows = 6;
-    pA4 pa4 = A4_alloc(rows, cols, sheets, blocks);
-    for (int l = 0; l < blocks; l ++) {
-        for (int k = 0; k < sheets; k++) {
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    pa4->pppp_storage[l][k][i][j] = 
-                            ((f32) ((i + 1) * (j + 1) * (k + 1) * (l + 1)));
+void test_4D_MLCA() {
+    int64_t blocks = 3;
+    int64_t sheets = 4;
+    int64_t cols = 7;
+    int64_t rows = 6;
+    pMLCA pmlca = alloc4D(blocks, sheets, rows, cols);
+    for (int block = 0; block < blocks; block++) {
+        for (int sheet = 0; sheet < sheets; sheet++) {
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    put4D(pmlca, block, sheet, row, col,
+                          ((f32) ((block + 1) * (sheet + 1)
+                          * (row + 1) * (col + 1))));
                 }
             }
         }
     }
-    A4_dump(pa4);
-    A4_free(pa4);
+    dumpMLCA(pmlca);
+    freeMLCA(pmlca);
 }
+
