@@ -54,7 +54,7 @@ To load these weights from Python:
 ## Dimension Order
 
 In general, PyTorch keeps the input array in the `(N, C, H, W)` order, while
-TensorFlow uses ``(N, H, W, C)` order. Where `N` is a batch size, C a number of
+TensorFlow uses `(N, H, W, C)` order. Where `N` is a batch size, C a number of
 channels, H is a height of input planes in pixels, W is a width.
 
 PyTorch uses the `(N, C, H, W)` order for convolutions, the weights are ordered
