@@ -524,12 +524,12 @@ int main() {
             char tmp[256];
             strncpy(tmp, ctx.infos[i].name.data, ctx.infos[i].name.n);
             tmp[ctx.infos[i].name.n] = 0;
-            printf("    %zu: %s ndim=%d shape=(%llu,%llu,%llu,%llu) type=%d offset=%llu\n",
+            printf("    %zu: %s ndim=%d shape=(%llu,%llu,%llu,%llu) type=%s offset=%llu\n",
                     i, tmp,
                     ctx.infos[i].n_dims,
                     ctx.infos[i].ne[0], ctx.infos[i].ne[1],
                     ctx.infos[i].ne[2], ctx.infos[i].ne[3],
-                    ctx.infos[i].type,
+                    ggml_type_name(ctx.infos[i].type),
                     ctx.infos[i].offset
                     );
         }
