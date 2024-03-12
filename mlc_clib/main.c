@@ -22,6 +22,8 @@ void test_4D_MLCA();
 
 #define GGUF_MAGIC "GGUF"
 #define GGUF_MAX_DIMS           4
+#define GGUF_DEFAULT_ALIGNMENT 32
+
 
 struct gguf_str {
     uint64_t n;  // GGUFv2
@@ -371,6 +373,30 @@ int gguf_read(const char *fname, struct gguf_context *ctx)
             }
         }
     }
+
+    ctx->alignment = GGUF_DEFAULT_ALIGNMENT;
+
+    // Not needed for now
+    /*
+    int alignment_idx = gguf_find_key(ctx, "general.alignment");
+    if (alignment_idx != -1) {
+        ctx->alignment = gguf_get_val_u32(ctx, alignment_idx);
+    }
+    */
+
+    // we require the data section to be aligned, so take into account any padding
+    {
+        const size_t offset_pad = offset % ctx->alignment;
+
+        if (offset_pad != 0) {
+            offset += ctx->alignment - offset_pad;
+            fseek(file, offset, SEEK_SET);
+        }
+    }
+
+    // store the current file offset - this is where the data section starts
+    ctx->offset = offset;
+
 
     return 0;
 }
