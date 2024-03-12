@@ -8,7 +8,7 @@ import torch
 print("    Done.")
 
 
-N_iter = 10
+N_iter = 1
 N_test = 10000
 
 
@@ -105,6 +105,57 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     return out
 
+def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.model = torch.nn.Sequential (
+                torch.nn.Conv2d(1, 32, 3, bias=True),
+                torch.nn.ReLU(),
+                torch.nn.MaxPool2d((2, 2)),
+                torch.nn.Conv2d(32, 64, 3, bias=True),
+                torch.nn.ReLU(),
+                torch.nn.MaxPool2d((2, 2)),
+                torch.nn.Flatten(0, -1),
+                torch.nn.Linear(1600, 10, bias=True),
+                torch.nn.Softmax(dim=0),
+                )
+
+            kernel1_ = np.transpose(kernel1, (3,2,0,1))
+            self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
+                    kernel1_.copy()))
+            self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
+                    bias1.copy()))
+            kernel2_ = np.transpose(kernel2, (3,2,0,1))
+            self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
+                    kernel2_.copy()))
+            self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
+                    bias2.copy()))
+            dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
+            dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
+            dense_w_ = np.reshape(dense_w_, (10, 1600))
+            self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
+                    dense_w_.copy()))
+            self.model[7].bias = torch.nn.Parameter(torch.from_numpy(
+                    dense_b.copy()))
+
+        def forward(self, x):
+            return self.model(x)
+
+    print("Input shape:", inp.shape)
+    assert inp.shape == (28, 28)
+    model = Model()
+    inp_ = np.expand_dims(inp, 0)
+    torch_inp = torch.tensor(inp_)
+    torch_out = model(torch_inp)
+    out = torch_out.detach().numpy()
+    print("Output shape:", out.shape)
+    assert out.shape == (10,)
+    print("PT:", out)
+    print("PT max:", out.argmax())
+
+    return out
+
 
 def main():
     print("Loading MNIST test images...")
@@ -130,9 +181,14 @@ def main():
 
         x = run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
         infer_val = np.argmax(x)
-
         print("Inferred value:", infer_val)
         print("Digit probabilities:", x)
+
+        print("---------")
+        x = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        infer_val = np.argmax(x)
+        print("NumPy Inferred value:", infer_val)
+        print("NumPy Digit probabilities:", x)
 
 
 if __name__ == '__main__':
