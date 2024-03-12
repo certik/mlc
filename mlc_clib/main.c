@@ -8,11 +8,6 @@
 
 #include "kernels.h"
 
-void test_1D_MLCA();
-void test_2D_MLCA();
-void test_3D_MLCA();
-void test_4D_MLCA();
-
 /*
  * On Mac, run "leaks" on the executable.
  *
@@ -24,7 +19,6 @@ void test_4D_MLCA();
 #define GGUF_MAX_DIMS           4
 #define GGUF_DEFAULT_ALIGNMENT 32
 #define GGUF_PAD(x, n) (((x) + (n) - 1) & ~((n) - 1))
-
 
 
 struct gguf_str {
@@ -49,20 +43,20 @@ enum gguf_type {
     GGUF_TYPE_COUNT,       // marks the end of the enum
 };
 
-static const size_t GGUF_TYPE_SIZE[GGUF_TYPE_COUNT] = {                                                  
-    [GGUF_TYPE_UINT8]   = sizeof(uint8_t),                                                                                        
-    [GGUF_TYPE_INT8]    = sizeof(int8_t),            
-    [GGUF_TYPE_UINT16]  = sizeof(uint16_t),                  
-    [GGUF_TYPE_INT16]   = sizeof(int16_t),          
-    [GGUF_TYPE_UINT32]  = sizeof(uint32_t),                            
-    [GGUF_TYPE_INT32]   = sizeof(int32_t),                      
-    [GGUF_TYPE_FLOAT32] = sizeof(float),                                                                                   
-    [GGUF_TYPE_BOOL]    = sizeof(bool),                                      
+static const size_t GGUF_TYPE_SIZE[GGUF_TYPE_COUNT] = {
+    [GGUF_TYPE_UINT8]   = sizeof(uint8_t),
+    [GGUF_TYPE_INT8]    = sizeof(int8_t),
+    [GGUF_TYPE_UINT16]  = sizeof(uint16_t),
+    [GGUF_TYPE_INT16]   = sizeof(int16_t),
+    [GGUF_TYPE_UINT32]  = sizeof(uint32_t),
+    [GGUF_TYPE_INT32]   = sizeof(int32_t),
+    [GGUF_TYPE_FLOAT32] = sizeof(float),
+    [GGUF_TYPE_BOOL]    = sizeof(bool),
     [GGUF_TYPE_STRING]  = sizeof(struct gguf_str),
-    [GGUF_TYPE_UINT64]  = sizeof(uint64_t),                                          
-    [GGUF_TYPE_INT64]   = sizeof(int64_t),    
-    [GGUF_TYPE_FLOAT64] = sizeof(double),         
-    [GGUF_TYPE_ARRAY]   = 0, // undefined                         
+    [GGUF_TYPE_UINT64]  = sizeof(uint64_t),
+    [GGUF_TYPE_INT64]   = sizeof(int64_t),
+    [GGUF_TYPE_FLOAT64] = sizeof(double),
+    [GGUF_TYPE_ARRAY]   = 0, // undefined
 };
 
 static size_t gguf_type_size(enum gguf_type type) {
