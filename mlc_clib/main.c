@@ -336,6 +336,42 @@ int gguf_read(const char *fname, struct gguf_context *ctx)
             return 7;
         }
     }
+
+    // read the array infos
+    {
+        bool ok = true;
+
+        ctx->infos = malloc(ctx->header.n_tensors * sizeof(struct gguf_tensor_info));
+
+        for (uint64_t i = 0; i < ctx->header.n_tensors; ++i) {
+            struct gguf_tensor_info * info = &ctx->infos[i];
+
+            for (int j = 0; j < GGUF_MAX_DIMS; ++j) {
+                info->ne[j] = 1;
+            }
+
+            ok = ok && gguf_fread_str(file, &info->name,                          &offset);
+            ok = ok && gguf_fread_el (file, &info->n_dims, sizeof(info->n_dims),  &offset);
+
+            ok = ok && (info->n_dims <= GGUF_MAX_DIMS);
+
+            for (uint32_t j = 0; j < info->n_dims; ++j) {
+                ok = ok && gguf_fread_el(file, &info->ne[j], sizeof(info->ne[j]), &offset);
+            }
+
+            ok = ok && gguf_fread_el (file, &info->type,   sizeof(info->type),    &offset);
+            ok = ok && gguf_fread_el (file, &info->offset, sizeof(info->offset),  &offset);
+
+            //gguf_tensor_info_sanitize(info);
+
+            if (!ok) {
+                fprintf(stderr, "%s: failed to read array info\n", __func__);
+                fclose(file);
+                return 10;
+            }
+        }
+    }
+
     return 0;
 }
 
@@ -347,7 +383,6 @@ int main() {
         printf("Magic:'%c%c%c%c'\n", ctx.header.magic[0], ctx.header.magic[1],
                 ctx.header.magic[2], ctx.header.magic[3]);
         printf("Version: %d\n", ctx.header.version);
-        printf("Number of arrays: %llu\n", ctx.header.n_tensors);
         printf("Number of kv pairs: %llu\n", ctx.header.n_kv);
         for (size_t i=0; i < ctx.header.n_kv; i++) {
             char tmp[256];
@@ -359,6 +394,20 @@ int main() {
                 v[ctx.kv[i].value.str.n] = 0;
             }
             printf("    %zu: %s = %s\n", i, tmp, v);
+        }
+        printf("Number of arrays: %llu\n", ctx.header.n_tensors);
+        for (size_t i=0; i < ctx.header.n_tensors; i++) {
+            char tmp[256];
+            strncpy(tmp, ctx.infos[i].name.data, ctx.infos[i].name.n);
+            tmp[ctx.infos[i].name.n] = 0;
+            printf("    %zu: %s ndim=%d shape=(%llu,%llu,%llu,%llu) type=%d offset=%llu\n",
+                    i, tmp,
+                    ctx.infos[i].n_dims,
+                    ctx.infos[i].ne[0], ctx.infos[i].ne[1],
+                    ctx.infos[i].ne[2], ctx.infos[i].ne[3],
+                    ctx.infos[i].type,
+                    ctx.infos[i].offset
+                    );
         }
     }
     return r;
