@@ -30,6 +30,38 @@ typedef float f32;
  */
 
 
+/*
+ * Our particular example gguf file:
+ *
+ * File read successfuly.
+ * Magic:'GGUF'
+ * Version: 3
+ * Number of kv pairs: 1
+ *     0: general.architecture = mnist-cnn
+ *     Data Offset: 384
+ *     Data Size:   139328
+ *     Number of arrays: 6
+ *       0: kernel1 ndim=4 shape=(32,1,3,3) type=f32 offset=0
+ *           First few elements of f32 array:
+ *               [0.146283, 0.033849, 0.200462, -0.395606, -0.251901]
+ *       1: bias1 ndim=1 shape=(32,1,1,1) type=f32 offset=1152
+ *           First few elements of f32 array:
+ *               [-0.012165, -0.040562, -0.000860, -0.014375, -0.029884]
+ *       2: kernel2 ndim=4 shape=(64,32,3,3) type=f32 offset=1280
+ *           First few elements of f32 array:
+ *               [0.085590, 0.054133, 0.127438, -0.014899, -0.134709]
+ *       3: bias2 ndim=1 shape=(64,1,1,1) type=f32 offset=75008
+ *           First few elements of f32 array:
+ *               [-0.115071, -0.032611, 0.020584, -0.130953, 0.019709]
+ *       4: dense_w ndim=2 shape=(10,1600,1,1) type=f32 offset=75264
+ *           First few elements of f32 array:
+ *               [-0.048662, 0.024389, -0.047063, 0.066041, 0.132236]
+ *       5: dense_b ndim=1 shape=(10,1,1,1) type=f32 offset=139264
+ *           First few elements of f32 array:
+ *               [0.040235, 0.139814, -0.007806, -0.031162, -0.078248]
+ */
+
+
 //# specs of function calls:
 //
 //.Sequential(layers=[
