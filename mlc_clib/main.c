@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "kernels.h"
 
@@ -43,6 +44,27 @@ enum gguf_type {
     GGUF_TYPE_FLOAT64 = 12,
     GGUF_TYPE_COUNT,       // marks the end of the enum
 };
+
+static const size_t GGUF_TYPE_SIZE[GGUF_TYPE_COUNT] = {                                                  
+    [GGUF_TYPE_UINT8]   = sizeof(uint8_t),                                                                                        
+    [GGUF_TYPE_INT8]    = sizeof(int8_t),            
+    [GGUF_TYPE_UINT16]  = sizeof(uint16_t),                  
+    [GGUF_TYPE_INT16]   = sizeof(int16_t),          
+    [GGUF_TYPE_UINT32]  = sizeof(uint32_t),                            
+    [GGUF_TYPE_INT32]   = sizeof(int32_t),                      
+    [GGUF_TYPE_FLOAT32] = sizeof(float),                                                                                   
+    [GGUF_TYPE_BOOL]    = sizeof(bool),                                      
+    [GGUF_TYPE_STRING]  = sizeof(struct gguf_str),
+    [GGUF_TYPE_UINT64]  = sizeof(uint64_t),                                          
+    [GGUF_TYPE_INT64]   = sizeof(int64_t),    
+    [GGUF_TYPE_FLOAT64] = sizeof(double),         
+    [GGUF_TYPE_ARRAY]   = 0, // undefined                         
+};
+
+static size_t gguf_type_size(enum gguf_type type) {
+    return GGUF_TYPE_SIZE[type];
+}
+
 
     enum ggml_type {
         GGML_TYPE_F32  = 0,
@@ -149,6 +171,22 @@ static bool gguf_fread_el(FILE * file, void * dst, size_t size,
     return n == size;
 }
 
+static bool gguf_fread_str(FILE * file, struct gguf_str * p, size_t * offset) {
+    p->n    = 0;
+    p->data = NULL;
+    bool ok = true;
+    ok = ok && gguf_fread_el(file, &p->n, sizeof(p->n), offset);
+    // early exit if string length is invalid, prevents from integer overflow
+    if (p->n == SIZE_MAX) {
+        fprintf(stderr, "%s: invalid string length (%llu)\n", __func__, p->n);
+        return false;
+    }
+    p->data = calloc(p->n + 1, 1);
+    ok = ok && gguf_fread_el(file,  p->data, p->n, offset);
+    return ok;
+}
+
+
 
 int gguf_read(const char *fname, struct gguf_context *ctx)
 {
@@ -204,6 +242,98 @@ int gguf_read(const char *fname, struct gguf_context *ctx)
             fprintf(stderr, "%s: failed to read header\n", __func__);
             fclose(file);
             return 4;
+        }
+    }
+
+    // kv pairs
+    {
+        bool ok = true;
+
+        ctx->kv = malloc(ctx->header.n_kv * sizeof(struct gguf_kv));
+
+        for (uint64_t i = 0; i < ctx->header.n_kv; ++i) {
+            struct gguf_kv * kv = &ctx->kv[i];
+
+            //fprintf(stderr, "%s: reading kv %d\n", __func__, i);
+
+            ok = ok && gguf_fread_str(file, &kv->key,                    &offset);
+            ok = ok && gguf_fread_el (file, &kv->type, sizeof(kv->type), &offset);
+
+            //fprintf(stderr, "%s: reading kv with key %s\n", __func__, kv->key.data);
+
+            switch (kv->type) {
+                case GGUF_TYPE_UINT8:   ok = ok && gguf_fread_el (file, &kv->value.uint8,   sizeof(kv->value.uint8),   &offset); break;
+                case GGUF_TYPE_INT8:    ok = ok && gguf_fread_el (file, &kv->value.int8,    sizeof(kv->value.int8),    &offset); break;
+                case GGUF_TYPE_UINT16:  ok = ok && gguf_fread_el (file, &kv->value.uint16,  sizeof(kv->value.uint16),  &offset); break;
+                case GGUF_TYPE_INT16:   ok = ok && gguf_fread_el (file, &kv->value.int16,   sizeof(kv->value.int16),   &offset); break;
+                case GGUF_TYPE_UINT32:  ok = ok && gguf_fread_el (file, &kv->value.uint32,  sizeof(kv->value.uint32),  &offset); break;
+                case GGUF_TYPE_INT32:   ok = ok && gguf_fread_el (file, &kv->value.int32,   sizeof(kv->value.int32),   &offset); break;
+                case GGUF_TYPE_FLOAT32: ok = ok && gguf_fread_el (file, &kv->value.float32, sizeof(kv->value.float32), &offset); break;
+                case GGUF_TYPE_UINT64:  ok = ok && gguf_fread_el (file, &kv->value.uint64,  sizeof(kv->value.uint64),  &offset); break;
+                case GGUF_TYPE_INT64:   ok = ok && gguf_fread_el (file, &kv->value.int64,   sizeof(kv->value.int64),   &offset); break;
+                case GGUF_TYPE_FLOAT64: ok = ok && gguf_fread_el (file, &kv->value.float64, sizeof(kv->value.float64), &offset); break;
+                case GGUF_TYPE_BOOL:    ok = ok && gguf_fread_el (file, &kv->value.bool_,   sizeof(kv->value.bool_),   &offset); break;
+                case GGUF_TYPE_STRING:  ok = ok && gguf_fread_str(file, &kv->value.str,                                &offset); break;
+                case GGUF_TYPE_ARRAY:
+                    {
+                        ok = ok && gguf_fread_el(file, &kv->value.arr.type, sizeof(kv->value.arr.type), &offset);
+                        ok = ok && gguf_fread_el(file, &kv->value.arr.n,    sizeof(kv->value.arr.n),    &offset);
+
+                        switch (kv->value.arr.type) {
+                            case GGUF_TYPE_UINT8:
+                            case GGUF_TYPE_INT8:
+                            case GGUF_TYPE_UINT16:
+                            case GGUF_TYPE_INT16:
+                            case GGUF_TYPE_UINT32:
+                            case GGUF_TYPE_INT32:
+                            case GGUF_TYPE_FLOAT32:
+                            case GGUF_TYPE_UINT64:
+                            case GGUF_TYPE_INT64:
+                            case GGUF_TYPE_FLOAT64:
+                            case GGUF_TYPE_BOOL:
+                                {
+                                    // prevent from integer overflow in the malloc below
+                                    if (kv->value.arr.n >= SIZE_MAX/gguf_type_size(kv->value.arr.type)) {
+                                        fprintf(stderr, "%s: array size is too large (%llu)\n", __func__, kv->value.arr.n);
+                                        fclose(file);
+                                        return 5;
+                                    }
+
+                                    kv->value.arr.data = malloc(kv->value.arr.n * gguf_type_size(kv->value.arr.type));
+
+                                    ok = ok && gguf_fread_el(file, kv->value.arr.data, kv->value.arr.n * gguf_type_size(kv->value.arr.type), &offset);
+                                } break;
+                            case GGUF_TYPE_STRING:
+                                {
+                                    // prevent from integer overflow in the malloc below
+                                    if (kv->value.arr.n >= SIZE_MAX/sizeof(struct gguf_str)) {
+                                        fprintf(stderr, "%s: array size is too large (%llu)\n", __func__, kv->value.arr.n);
+                                        fclose(file);
+                                        return 6;
+                                    }
+
+                                    kv->value.arr.data = malloc(kv->value.arr.n * sizeof(struct gguf_str));
+
+                                    for (uint64_t j = 0; j < kv->value.arr.n; ++j) {
+                                        ok = ok && gguf_fread_str(file, &((struct gguf_str *) kv->value.arr.data)[j], &offset);
+                                    }
+                                } break;
+                            case GGUF_TYPE_ARRAY:
+                            default: fprintf(stderr, "invalid type\n"); return 8; break;
+                        }
+                    } break;
+                default: fprintf(stderr, "invalid type\n"); return 9; break;
+            }
+
+            if (!ok) {
+                break;
+            }
+        }
+
+        if (!ok) {
+            fprintf(stderr, "%s: failed to read key-value pairs\n", __func__);
+            fclose(file);
+            return 7;
         }
     }
     return 0;
