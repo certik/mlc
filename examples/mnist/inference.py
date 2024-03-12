@@ -138,10 +138,9 @@ def conv2d_kernel(kernel_size, weight, x):
     out_h = in_h - (kernel_size-1)
     out = np.empty((out_h, out_w), dtype=x.dtype)
 
-    assert kernel_size == 3
     for h in range(out_h):
         for w in range(out_w):
-            out[h,w] = np.sum(weight*x[h-1+1:h+2+1,w-1+1:w+2+1])
+            out[h,w] = np.sum(weight*x[h:h+kernel_size,w:w+kernel_size])
     return out
 
 # (batch, channel, h, w)
