@@ -110,6 +110,18 @@ def softmax(x):
     exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
     return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
+# (batch, w, h)
+def max_pool_2d(x):
+    batch, w, h = x.shape
+    w2 = w//2
+    h2 = h//2
+    r = np.empty((batch, w2, h2), dtype=x.dtype)
+    for b in range(batch):
+        for i in range(w2):
+            for j in range(h2):
+                r[b, i, j] = np.max(x[b, 2*i:2*i+2, 2*j:2*j+2])
+    return r
+
 def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     class Model(torch.nn.Module):
         def __init__(self):
@@ -120,7 +132,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.MaxPool2d((2, 2)),
                 torch.nn.Conv2d(32, 64, 3, bias=True),
                 torch.nn.ReLU(),
-                torch.nn.MaxPool2d((2, 2)),
                 )
 
             kernel1_ = np.transpose(kernel1, (3,2,0,1))
@@ -144,6 +155,9 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
+
+    # MaxPool2D
+    out = max_pool_2d(out)
 
     # Flatten
     out = np.reshape(out, (1600,))
