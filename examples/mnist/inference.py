@@ -110,6 +110,11 @@ def softmax(x):
     exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
     return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
+def relu(x):
+    y = x.copy()
+    y[x < 0] = 0
+    return y
+
 # (batch, w, h)
 def max_pool_2d(x):
     batch, w, h = x.shape
@@ -131,7 +136,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.ReLU(),
                 torch.nn.MaxPool2d((2, 2)),
                 torch.nn.Conv2d(32, 64, 3, bias=True),
-                torch.nn.ReLU(),
                 )
 
             kernel1_ = np.transpose(kernel1, (3,2,0,1))
@@ -155,6 +159,9 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
+
+    # ReLU
+    out = relu(out)
 
     # MaxPool2D
     out = max_pool_2d(out)
