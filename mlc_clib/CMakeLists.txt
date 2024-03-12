@@ -6,4 +6,6 @@ set(CMAKE_C_STANDARD 11)
 add_executable(mlc_clib
         main.c
         kernels.h
-        kernels.c)
+        kernels.c
+        gguf.h
+        gguf.c)
