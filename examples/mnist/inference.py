@@ -164,7 +164,6 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
             super().__init__()
             self.model = torch.nn.Sequential (
                 torch.nn.Conv2d(1, 32, 3, bias=True),
-                torch.nn.ReLU(),
                 )
 
             kernel1_ = np.transpose(kernel1, (3,2,0,1))
@@ -183,6 +182,9 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     torch_inp = torch.tensor(inp_)
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
+
+    # ReLU
+    out = relu(out)
 
     # MaxPool2D
     out = max_pool_2d(out)
