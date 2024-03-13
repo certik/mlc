@@ -25,6 +25,8 @@ int main() {
         return r;
     }
 
+    int digit_idx = 4212;
+
     {
         assert(ctx_test.infos[0].ne[0] == 28);
         assert(ctx_test.infos[0].ne[1] == 28);
@@ -50,7 +52,7 @@ int main() {
         }
 
         // Draw 4201'th digit in the file.
-        draw_digit(pDigits + (4212 * digit_size));
+        draw_digit(pDigits + (digit_idx * digit_size));
     }
     {
         assert(ctx_test.infos[1].ne[0] == 10000);
@@ -61,11 +63,7 @@ int main() {
         assert(sizeof(uint8_t) == 1);
         assert(digit_ref_bytes != NULL);
 
-        printf("digit references:\n");
-        for (int i = 0; i < 42; i++) {
-            printf("%u ", digit_ref_bytes[i]);
-        }
-        printf("\n");
+        printf("Reference value: %u\n", digit_ref_bytes[digit_idx]);
     }
 
     // Read the gguf file
