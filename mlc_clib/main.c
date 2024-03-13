@@ -28,9 +28,8 @@ void transpose(int n1, int n2, int n3, int n4, f32 *A,
     for (int j = 0; j < n2; j++) {
     for (int k = 0; k < n3; k++) {
     for (int l = 0; l < n4; l++) {
-        // TODO: transpose indices in B
-        B[I4(n1,n2,n3,n4,i,j,k,l)]
-            = A[I4(n1,n2,n3,n4,i,j,k,l)];
+        // TODO: for now the transposition is hardwired to (3,2,0,1)
+        B[I4(n4,n3,n1,n2,l,k,i,j)] = A[I4(n1,n2,n3,n4,i,j,k,l)];
     }}}}
 }
 
@@ -154,7 +153,7 @@ int main() {
     // (32, 1, 3, 3)
     f32 *kernel1_ = malloc(32*1*3*3*sizeof(f32));
     transpose(3, 3, 1, 32, kernel1, 3, 2, 0, 1, kernel1_);
-    print_A(kernel1);
+    print_A(kernel1_);
 
     return 0;
 }
