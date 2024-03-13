@@ -228,6 +228,7 @@ def main():
 
     for iter in range(N_iter):
         i = random.randint(0, N_test)
+        i = 4212
         print("Input digit index:", i)
         inp = x_test[i,:,:]
         draw_digit(inp)
