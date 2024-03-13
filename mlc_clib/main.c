@@ -42,6 +42,8 @@ int main() {
         size_t digits_size = nitems * sizeof(f32);
         f32 * digits = malloc(digits_size);
         size_t inspect = fread(digits, nitems, sizeof(f32), f);
+        int eofQ = feof(f);
+        int errQ = ferror(f);
         draw_digit(digits);
         free(digits);
         fclose(f);
@@ -51,6 +53,9 @@ int main() {
         int ndigits = 10000;
         char * digit_ref_bytes = malloc(ndigits * sizeof(char));
         size_t inspect = fread(digit_ref_bytes, ndigits, sizeof(char), f);
+        int eofQ = feof(f);
+        int errQ = ferror(f);
+        // BUG: This does not read 07, but 07 is the leading byte of the file.
         printf("digit reference = %d\n", ((int)(digit_ref_bytes[0])));
         free(digit_ref_bytes);
         fclose(f);
