@@ -30,7 +30,7 @@ int main() {
         assert(ctx_test.infos[0].ne[1] == 28);
         assert(ctx_test.infos[0].ne[2] == 10000);
         assert(ctx_test.infos[0].type == GGML_TYPE_I8);
-        uint8_t *pDigits = (uint8_t *) (ctx_test.data + ctx_test.infos[0].offset);
+        uint8_t *pDigits_u8 = (uint8_t *) (ctx_test.data + ctx_test.infos[0].offset);
 
         int ndigits = 10000;
         int width = 28;
@@ -38,7 +38,16 @@ int main() {
         size_t digit_size = width * height;
         size_t nitems = ndigits * digit_size;
 
-        size_t digits_size = nitems * sizeof(uint8_t);  // plural
+        size_t digits_size = nitems * sizeof(f32);  // plural
+        f32 * pDigits = malloc(digits_size);
+        for (int i = 0; i < ndigits; i++) {
+            for (int j = 0; j < height; j++) {
+                for (int k = 0; k < width; k++) {
+                    pDigits[i*height*width+j*width+k]
+                        = (f32)(pDigits_u8[i*height*width+j*width+k]) / 255.;
+                }
+            }
+        }
 
         // Draw 4201'th digit in the file.
         draw_digit(pDigits + (4212 * digit_size));
