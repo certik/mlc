@@ -41,9 +41,18 @@ int main() {
         int nitems = ndigits * width * height;
         size_t digits_size = nitems * sizeof(f32);
         f32 * digits = malloc(digits_size);
-        fread(digits, nitems, sizeof(f32), f);
+        size_t inspect = fread(digits, nitems, sizeof(f32), f);
         draw_digit(digits);
         free(digits);
+        fclose(f);
+    }
+    f = fopen("./mlc_clib/data/digit_imgs.dat", "rb");
+    if (f) {
+        int ndigits = 10000;
+        char * digit_ref_bytes = malloc(ndigits * sizeof(char));
+        size_t inspect = fread(digit_ref_bytes, ndigits, sizeof(char), f);
+        printf("digit reference = %d\n", ((int)(digit_ref_bytes[0])));
+        free(digit_ref_bytes);
         fclose(f);
     }
 
