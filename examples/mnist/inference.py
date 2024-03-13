@@ -18,6 +18,9 @@ def load_test_data():
     # Shapes:
     # x (10000, 28, 28)
     # y (10000,)
+    # Write out data so C can ingest it.
+    # inspect = x.tofile("../../mlc_clib/data/digit_imgs.dat")
+    # inspect = y.tofile("../../mlc_clib/data/digit_refs.dat")
     return x, y
 
 def draw_digit(A):
