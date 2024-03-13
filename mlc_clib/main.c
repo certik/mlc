@@ -43,6 +43,7 @@ int main() {
 
         size_t digits_size = nitems * sizeof(f32);  // plural
         f32 * pDigits = malloc(digits_size);
+        assert(pDigits != NULL);
 
         size_t inspect = fread(pDigits, sizeof(f32), nitems,f);
         int eofQ = feof(f);
@@ -57,15 +58,19 @@ int main() {
     f = fopen("./mlc_clib/data/digit_imgs.dat", "rb");
     if (f) {
         size_t ndigits = 10000;
+        assert(sizeof(uint8_t) == 1);
         uint8_t * digit_ref_bytes = malloc(ndigits * sizeof(uint8_t));
+        assert(digit_ref_bytes != NULL);
 
         size_t inspect = fread(digit_ref_bytes, sizeof(uint8_t), ndigits, f);
         int eofQ = feof(f);
         int errQ = ferror(f);
 
-        // BUG: This does not read 07, but 07 is the leading byte of the file,
+        // BUG: This does not yield 07, but 07 is the leading byte of the file,
         // as can be verified by hex dump of the file. The diagnostics above
         // show everything is ok.
+        uint8_t inspect2 = digit_ref_bytes[0];
+
         printf("digit references:\n");
         for (int i = 0; i < 42; i++) {
             printf("%u ", digit_ref_bytes[i]);
