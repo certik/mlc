@@ -13,47 +13,35 @@
 
 
 int main() {
-    // Read digits data from mnist, save via np.ndarray.tofile
-    // after being imported from keras. E.g., run the following
-    // from Python. The binary file is 31 Meg, a little big for
-    // github.
-    //
-    // def load_test_data():
-    //    _, (x, y) = keras.datasets.mnist.load_data()
-    //    x = x.astype("float32") / 255
-    //    # Shapes:
-    //    # x (10000, 28, 28)
-    //    # y (10000,)
-    //    # Write out data so C can ingest it.
-    //    inspect = x.tofile("../../mlc_clib/data/digit_imgs.dat")
-    //    inspect = y.tofile("../../mlc_clib/data/digit_refs.dat")
-    //    return x, y
-    //
+    // Follow the instructions in the README. The `mnist-tf` script will
+    // generate two GGUF files:
+    // * mnist-cnn-model.gguf (trained ML weights)
+    // * mnist-tests.gguf (10,000 MNIST test images)
 
-    //
+    struct gguf_context ctx_test;
+    int r = gguf_read("../examples/mnist/mnist-tests.gguf", &ctx_test);
+    if (r != 0) {
+        printf("GGUF file not read; return code = %d\n", r);
+        return r;
+    }
 
-    FILE * f = fopen("./mlc_clib/data/digit_imgs.dat", "rb");
-    // We know the file is 10000, 28, 28
-    if (f){
+    {
+        assert(ctx_test.infos[0].ne[0] == 28);
+        assert(ctx_test.infos[0].ne[1] == 28);
+        assert(ctx_test.infos[0].ne[2] == 10000);
+        assert(ctx_test.infos[0].type == GGML_TYPE_I8);
+        uint8_t *pDigits = (uint8_t *) (ctx_test.data + ctx_test.infos[0].offset);
+
         int ndigits = 10000;
         int width = 28;
         int height = 28;
         size_t digit_size = width * height;
         size_t nitems = ndigits * digit_size;
 
-        size_t digits_size = nitems * sizeof(f32);  // plural
-        f32 * pDigits = malloc(digits_size);
-        assert(pDigits != NULL);
-
-        size_t inspect = fread(pDigits, sizeof(f32), nitems,f);
-        int eofQ = feof(f);
-        int errQ = ferror(f);
+        size_t digits_size = nitems * sizeof(uint8_t);  // plural
 
         // Draw 4201'th digit in the file.
-        draw_digit(pDigits + (4200 * digit_size));
-
-        free(pDigits);
-        fclose(f);
+        draw_digit(pDigits + (4212 * digit_size));
     }
     f = fopen("./mlc_clib/data/digit_refs.dat", "rb");
     if (f) {
