@@ -38,25 +38,40 @@ int main() {
         int ndigits = 10000;
         int width = 28;
         int height = 28;
-        int nitems = ndigits * width * height;
-        size_t digits_size = nitems * sizeof(f32);
-        f32 * digits = malloc(digits_size);
-        size_t inspect = fread(digits, nitems, sizeof(f32), f);
+        size_t digit_size = width * height;
+        size_t nitems = ndigits * digit_size;
+
+        size_t digits_size = nitems * sizeof(f32);  // plural
+        f32 * pDigits = malloc(digits_size);
+
+        size_t inspect = fread(pDigits, sizeof(f32), nitems,f);
         int eofQ = feof(f);
         int errQ = ferror(f);
-        draw_digit(digits);
-        free(digits);
+
+        // Draw 4201'th digit in the file.
+        draw_digit(pDigits + (4200 * digit_size));
+
+        free(pDigits);
         fclose(f);
     }
     f = fopen("./mlc_clib/data/digit_imgs.dat", "rb");
     if (f) {
-        int ndigits = 10000;
-        char * digit_ref_bytes = malloc(ndigits * sizeof(char));
-        size_t inspect = fread(digit_ref_bytes, ndigits, sizeof(char), f);
+        size_t ndigits = 10000;
+        uint8_t * digit_ref_bytes = malloc(ndigits * sizeof(uint8_t));
+
+        size_t inspect = fread(digit_ref_bytes, sizeof(uint8_t), ndigits, f);
         int eofQ = feof(f);
         int errQ = ferror(f);
-        // BUG: This does not read 07, but 07 is the leading byte of the file.
-        printf("digit reference = %d\n", ((int)(digit_ref_bytes[0])));
+
+        // BUG: This does not read 07, but 07 is the leading byte of the file,
+        // as can be verified by hex dump of the file. The diagnostics above
+        // show everything is ok.
+        printf("digit references:\n");
+        for (int i = 0; i < 42; i++) {
+            printf("%u ", digit_ref_bytes[i]);
+        }
+        printf("\n");
+
         free(digit_ref_bytes);
         fclose(f);
     }
