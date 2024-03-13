@@ -12,6 +12,7 @@
  */
 
 #define I2(D1, D2, i, j) ((i)*(D2)+(j))
+#define I3(D1, D2, D3, i, j, k) ((i)*(D3)*(D2)+(j)*(D3)+(k))
 #define I4(D1, D2, D3, D4, i, j, k, l) ((i)*(D4)*(D3)*(D2)+(j)*(D4)*(D3)+(k)*(D4)+(l))
 
 void print_A(f32 *A) {
@@ -31,6 +32,57 @@ void transpose(int n1, int n2, int n3, int n4, f32 *A,
         // TODO: for now the transposition is hardwired to (3,2,0,1)
         B[I4(n4,n3,n1,n2,l,k,i,j)] = A[I4(n1,n2,n3,n4,i,j,k,l)];
     }}}}
+}
+
+// (h, w)
+// Note: this is appending (+=) to `out`, must be initialized.
+void conv2d_kernel(int kernel_size, int in_h, int in_w,
+        f32 *weight, // (3,3)
+        f32 *x, // (in_h,in_w)
+        f32 *out // (out_w,out_h)
+        )
+{
+    int out_w = in_w - (kernel_size-1);
+    int out_h = in_h - (kernel_size-1);
+    for (int h = 0; h < out_h; h++) {
+    for (int w = 0; w < out_w; w++) {
+            for (int i=0; i<kernel_size; i++) {
+            for (int j=0; j<kernel_size; j++) {
+                out[I2(out_h,out_w,h,w)] += weight[I2(3,3,i,j)] * \
+                    x[I2(in_h,in_w,h+i,w+j)];
+            }}
+    }}
+}
+
+// (batch, channel, h, w)
+void conv2d(int in_channels, int out_channels, int kernel_size,
+        int in_h, int in_w,
+        f32 *weight, // (out_channels,in_channels,3,3)
+        f32 *bias, // (out_channels,)
+        f32 *x, // (in_channels,in_h,in_w)
+        f32 *out // (out_channels,out_h,out_w)
+        )
+{
+    int out_w = in_w - (kernel_size-1);
+    int out_h = in_h - (kernel_size-1);
+    f32 s[out_h*out_w];
+    for (int c = 0; c < out_channels; c++) {
+        for (int i=0; i<out_h; i++) {
+        for (int j=0; j<out_w; j++) {
+            s[I2(out_h,out_w,i,j)] = 0;
+        }}
+        for (int k = 0; k < in_channels; k++) {
+            conv2d_kernel(kernel_size, in_h, in_w,
+                    &weight[I4(out_channels,in_channels,3,3,c,k,0,0)],
+                    &x[I3(in_channels,in_h,in_w,k,0,0)],
+                    s);
+        }
+        for (int i=0; i<out_h; i++) {
+        for (int j=0; j<out_w; j++) {
+            out[I3(out_channels,out_h,out_w,c,i,j)] = bias[c] + \
+                s[I2(out_h,out_w,i,j)];
+        }}
+    }
 }
 
 int main() {
@@ -143,6 +195,8 @@ int main() {
 
     // (3, 3, 1, 32)
     f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
+    // (32,)
+    f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
 
     // (28, 28)
     f32 *out = pDigits + digit_idx*28*28;
@@ -154,6 +208,16 @@ int main() {
     f32 *kernel1_ = malloc(32*1*3*3*sizeof(f32));
     transpose(3, 3, 1, 32, kernel1, 3, 2, 0, 1, kernel1_);
     print_A(kernel1_);
+
+    f32 *out2 = malloc(32*26*26);
+    conv2d(1, 32, 3,
+        28, 28,
+        kernel1_, // (32, 1, 3, 3)
+        bias1, // (32,)
+        out, // (1, 28, 28)
+        out2 // (32, 26, 26)
+        );
+    print_A(&out2[26*26]);
 
     return 0;
 }
