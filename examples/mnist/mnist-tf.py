@@ -92,8 +92,8 @@ def convert_tests(model_name):
     gguf_model_name = model_name + ".gguf"
     gguf_writer = gguf.GGUFWriter(gguf_model_name, "mnist-cnn")
 
-    gguf_writer.add_tensor("x_test", x_test, raw_dtype=8)
-    gguf_writer.add_tensor("y_test", y_test, raw_dtype=8)
+    gguf_writer.add_tensor("x_test", np.array(x_test, dtype=np.int8))
+    gguf_writer.add_tensor("y_test", np.array(y_test, dtype=np.int8))
 
     gguf_writer.write_header_to_file()
     gguf_writer.write_kv_data_to_file()
