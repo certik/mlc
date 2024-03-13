@@ -62,7 +62,7 @@ int main() {
     // Read the gguf file
 
     struct gguf_context ctx;
-    int r = gguf_read("examples/mnist/mnist-cnn-model.gguf", &ctx);
+    r = gguf_read("../examples/mnist/mnist-cnn-model.gguf", &ctx);
     if (r != 0) {
         printf("GGUF file not read; return code = %d\n", r);
         return r;
