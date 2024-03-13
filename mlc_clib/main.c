@@ -55,7 +55,7 @@ int main() {
         free(pDigits);
         fclose(f);
     }
-    f = fopen("./mlc_clib/data/digit_imgs.dat", "rb");
+    f = fopen("./mlc_clib/data/digit_refs.dat", "rb");
     if (f) {
         size_t ndigits = 10000;
         assert(sizeof(uint8_t) == 1);
