@@ -11,6 +11,28 @@
  * leaks --atExit -- ./mlc_clib
  */
 
+#define I2(D1, D2, i, j) ((i)*(D2)+(j))
+#define I4(D1, D2, D3, D4, i, j, k, l) ((i)*(D4)*(D3)*(D2)+(j)*(D4)*(D3)+(k)*(D4)+(l))
+
+void print_A(f32 *A) {
+    for (int i = 0; i < 10; i++) {
+        printf("%f ", A[i]);
+    }
+    printf("\n");
+}
+
+// A -> B
+void transpose(int n1, int n2, int n3, int n4, f32 *A,
+            int t1, int t2, int t3, int t4, f32 *B) {
+    for (int i = 0; i < n1; i++) {
+    for (int j = 0; j < n2; j++) {
+    for (int k = 0; k < n3; k++) {
+    for (int l = 0; l < n4; l++) {
+        // TODO: transpose indices in B
+        B[I4(n1,n2,n3,n4,i,j,k,l)]
+            = A[I4(n1,n2,n3,n4,i,j,k,l)];
+    }}}}
+}
 
 int main() {
     // Follow the instructions in the README. The `mnist-tf` script will
@@ -119,6 +141,21 @@ int main() {
             }
         }
     }
-    return r;
+
+    // (3, 3, 1, 32)
+    f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
+
+    // (28, 28)
+    f32 *out = pDigits + digit_idx*28*28;
+
+    print_A(&out[I2(28, 28, 14, 13)]);
+    print_A(kernel1);
+
+    // (32, 1, 3, 3)
+    f32 *kernel1_ = malloc(32*1*3*3*sizeof(f32));
+    transpose(3, 3, 1, 32, kernel1, 3, 2, 0, 1, kernel1_);
+    print_A(kernel1);
+
+    return 0;
 }
 
