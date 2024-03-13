@@ -8,4 +8,6 @@ add_executable(mlc_clib
         kernels.h
         kernels.c
         gguf.h
-        gguf.c)
+        gguf.c
+        display.c
+        display.h)

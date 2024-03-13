@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "kernels.h"
+#include "display.h"
 #include "gguf.h"
 
 /*
@@ -12,6 +13,42 @@
 
 
 int main() {
+    // Read digits data from mnist, save via np.ndarray.tofile
+    // after being imported from keras. E.g., run the following
+    // from Python. The binary file is 31 Meg, a little big for
+    // github.
+    //
+    // def load_test_data():
+    //    _, (x, y) = keras.datasets.mnist.load_data()
+    //    x = x.astype("float32") / 255
+    //    # Shapes:
+    //    # x (10000, 28, 28)
+    //    # y (10000,)
+    //    # Write out data so C can ingest it.
+    //    inspect = x.tofile("../../mlc_clib/data/digit_imgs.dat")
+    //    inspect = y.tofile("../../mlc_clib/data/digit_refs.dat")
+    //    return x, y
+    //
+
+    //
+
+    FILE * f = fopen("./mlc_clib/data/digit_imgs.dat", "rb");
+    // We know the file is 10000, 28, 28
+    if (f){
+        int ndigits = 10000;
+        int width = 28;
+        int height = 28;
+        int nitems = ndigits * width * height;
+        size_t digits_size = nitems * sizeof(f32);
+        f32 * digits = malloc(digits_size);
+        fread(digits, nitems, sizeof(f32), f);
+        draw_digit(digits);
+        free(digits);
+        fclose(f);
+    }
+
+    // Read the gguf file
+
     struct gguf_context ctx;
     int r = gguf_read("examples/mnist/mnist-cnn-model.gguf", &ctx);
     if (r != 0) {

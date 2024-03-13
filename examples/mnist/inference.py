@@ -12,19 +12,12 @@ N_iter = 1
 N_test = 10000
 
 
-def load_test_data():
-    _, (x, y) = keras.datasets.mnist.load_data()
-    x = x.astype("float32") / 255
-    # Shapes:
-    # x (10000, 28, 28)
-    # y (10000,)
-    return x, y
-
+Ï
 def draw_digit(A):
     # (28, 28)
     assert A.shape == (28, 28)
     shades = " ░▒▓█"
-    print("╔" + "══"*28 + "╗")
+
     for row in range(28):
         print("║", end="")
         for col in range(28):
