@@ -43,30 +43,20 @@ int main() {
         // Draw 4201'th digit in the file.
         draw_digit(pDigits + (4212 * digit_size));
     }
-    f = fopen("./mlc_clib/data/digit_refs.dat", "rb");
-    if (f) {
+    {
+        assert(ctx_test.infos[1].ne[0] == 10000);
+        assert(ctx_test.infos[1].type == GGML_TYPE_I8);
+        uint8_t * digit_ref_bytes = (uint8_t *) (ctx_test.data + ctx_test.infos[1].offset);
+
         size_t ndigits = 10000;
         assert(sizeof(uint8_t) == 1);
-        uint8_t * digit_ref_bytes = malloc(ndigits * sizeof(uint8_t));
         assert(digit_ref_bytes != NULL);
-
-        size_t inspect = fread(digit_ref_bytes, sizeof(uint8_t), ndigits, f);
-        int eofQ = feof(f);
-        int errQ = ferror(f);
-
-        // BUG: This does not yield 07, but 07 is the leading byte of the file,
-        // as can be verified by hex dump of the file. The diagnostics above
-        // show everything is ok.
-        uint8_t inspect2 = digit_ref_bytes[0];
 
         printf("digit references:\n");
         for (int i = 0; i < 42; i++) {
             printf("%u ", digit_ref_bytes[i]);
         }
         printf("\n");
-
-        free(digit_ref_bytes);
-        fclose(f);
     }
 
     // Read the gguf file
