@@ -18,6 +18,9 @@ int main() {
     // * mnist-cnn-model.gguf (trained ML weights)
     // * mnist-tests.gguf (10,000 MNIST test images)
 
+
+    // Read test images
+
     struct gguf_context ctx_test;
     int r = gguf_read("../examples/mnist/mnist-tests.gguf", &ctx_test);
     if (r != 0) {
@@ -68,7 +71,7 @@ int main() {
         printf("Reference value: %u\n", digit_ref_bytes[digit_idx]);
     }
 
-    // Read the gguf file
+    // Read the model file
 
     struct gguf_context ctx;
     r = gguf_read("../examples/mnist/mnist-cnn-model.gguf", &ctx);
