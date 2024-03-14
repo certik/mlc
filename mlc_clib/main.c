@@ -131,7 +131,7 @@ int main() {
                 for (int j = 0; j < height; j++) {
                     for (int k = 0; k < width; k++) {
                         pDigits[i*height*width+j*width+k]
-                            = (f32)(pDigits_u8[i*height*width+j*width+k]) / 255.;
+                            = (f32)(pDigits_u8[i*height*width+j*width+k]) / 255.f;
                     }
                 }
             }
