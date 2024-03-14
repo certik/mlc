@@ -78,13 +78,13 @@ class saxpy(Instruction):
     m: int
     n: int
     # (m, n)
-    A_name: str
+    A_name: str # matrix A
     # (n,)
-    x_name: str # input argument
+    y_name: str # vector y
     # (n,)
-    y_name: str
+    x_in: str # input argument (x)
     # (n,)
-    out_name: str # output argument
+    x_out: str # output argument
 
 @dataclass
 class softmax(Instruction):
