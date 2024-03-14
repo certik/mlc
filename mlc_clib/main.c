@@ -100,7 +100,6 @@ void relu(int in_channels, int in_h, int in_w,
             } else {
                 out[I3(in_channels,in_h,in_w,c,i,j)] = 0;
             }
-
         }}
     }
 }
@@ -227,9 +226,8 @@ int main() {
     // (32, 1, 3, 3)
     f32 *kernel1_ = malloc(32*1*3*3*sizeof(f32));
     transpose(3, 3, 1, 32, kernel1, 3, 2, 0, 1, kernel1_);
-    print_A(kernel1_);
 
-    f32 *out2 = malloc(32*26*26);
+    f32 *out2 = malloc(32*26*26*sizeof(f32));
     conv2d(1, 32, 3,
         28, 28,
         kernel1_, // (32, 1, 3, 3)
@@ -237,7 +235,15 @@ int main() {
         out, // (1, 28, 28)
         out2 // (32, 26, 26)
         );
-    print_A(&out2[26*26]);
+
+    f32 *out3 = malloc(32*26*26*sizeof(f32));
+    relu(32, 26, 26,
+        out2, // (32, 26, 26)
+        out3 // (32, 26, 26)
+        );
+
+    //print_A(&out3[I3(32,26,26,7,18,15)]);
+    //print_A(&out3[I3(32,26,26,8,18,15)]);
 
     return 0;
 }
