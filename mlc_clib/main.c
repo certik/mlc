@@ -22,7 +22,7 @@ void print_A(f32 *A) {
 
 int main() {
     // Follow the instructions in the
-    // mlc/examples/mnist/READMEmd, namely
+    // mlc/examples/mnist/README.md, namely
     //
     //    python mnist-tf.py train mnist-cnn-model
     //    python mnist-tf.py convert mnist-cnn-model
@@ -52,7 +52,7 @@ int main() {
         return r;
     }
     /*
-    printf("File read successfuly.\n");
+    printf("File read successfully.\n");
     printf("Magic:'%c%c%c%c'\n", ctx.header.magic[0], ctx.header.magic[1],
            ctx.header.magic[2], ctx.header.magic[3]);
     printf("Version: %d\n", ctx.header.version);
@@ -94,7 +94,7 @@ int main() {
     }
     */
 
-    // (3, 3, 1, 32)
+    // (3, 3, 1, 32) -- row major, C-order, (H W C_in C_out)
     f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
     // (32,)
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);

@@ -39,7 +39,7 @@ void softmax(int n,
         f32 *out // (n,)
         );
 void max_pool_2d(int in_channels, int in_h, int in_w,
-        f32 *x, // (in_channels,in_h,in_w)
+        const f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (in_channels,in_h/2,in_w/2)
         );
 // out = matmul(A, x) + y
