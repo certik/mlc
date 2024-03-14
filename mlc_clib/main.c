@@ -269,7 +269,7 @@ int main() {
     // (10,)
     f32 *dense_b = (f32*) (ctx.data + ctx.infos[5].offset);
 
-    for (int digit_idx_i=0; digit_idx_i < 10; digit_idx_i++) {
+    for (int digit_idx_i=0; digit_idx_i < 13; digit_idx_i++) {
         int digit_idx = 4212 + digit_idx_i;
         f32 *pDigits;
         uint8_t *digit_ref_bytes;
@@ -310,7 +310,8 @@ int main() {
             assert(sizeof(uint8_t) == 1);
             assert(digit_ref_bytes != NULL);
 
-            printf("Reference value: %u\n", digit_ref_bytes[digit_idx]);
+            printf("Reference value: %u; digit index %d\n",
+                    digit_ref_bytes[digit_idx], digit_idx);
         }
 
 
