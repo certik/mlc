@@ -13,40 +13,40 @@
 
 typedef float f32;
 
-void transpose(int n1, int n2, int n3, int n4, f32 *A,
+void transpose(int n1, int n2, int n3, int n4, const f32 *A,
             int t1, int t2, int t3, int t4, f32 *B); 
 void conv2d_kernel(int kernel_size, int in_h, int in_w,
-        f32 *weight, // (3,3)
-        f32 *x, // (in_h,in_w)
+        const f32 *weight, // (3,3)
+        const f32 *x, // (in_h,in_w)
         f32 *out // (out_w,out_h)
         );
 void conv2d(int in_channels, int out_channels, int kernel_size,
         int in_h, int in_w,
         f32 *weight, // (out_channels,in_channels,3,3)
-        f32 *bias, // (out_channels,)
+        const f32 *bias, // (out_channels,)
         f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (out_channels,out_h,out_w)
         );
 void relu(int in_channels, int in_h, int in_w,
-        f32 *x, // (in_channels,in_h,in_w)
+        const f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (in_channels,in_h,in_w)
         );
-f32 max(int n, f32 *x);
-int argmax(int n, f32 *x);
-f32 sum(int n, f32 *x);
+f32 max(int n, const f32 *x);
+int argmax(int n, const f32 *x);
+f32 sum(int n, const f32 *x);
 void softmax(int n,
         f32 *x,  // (n,)
         f32 *out // (n,)
         );
 void max_pool_2d(int in_channels, int in_h, int in_w,
-        f32 *x, // (in_channels,in_h,in_w)
+        const f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (in_channels,in_h/2,in_w/2)
         );
 // out = matmul(A, x) + y
 void saxpy(int m, int n,
-        f32 *A,  // (m, n)
-        f32 *x,  // (n,)
-        f32 *y,  // (m,)
+        const f32 *A,  // (m, n)
+        const f32 *x,  // (n,)
+        const f32 *y,  // (m,)
         f32 *out // (m,)
         );
 
