@@ -21,7 +21,14 @@ void print_A(f32 *A) {
 
 
 int main() {
-    // Follow the instructions in the README. The `mnist-tf` script will
+    // Follow the instructions in the
+    // mlc/examples/mnist/READMEmd, namely
+    //
+    //    python mnist-tf.py train mnist-cnn-model
+    //    python mnist-tf.py convert mnist-cnn-model
+    //    python mnist-tf.py convert_tests mnist-tests
+    //
+    // The `mnist-tf` script will
     // generate two GGUF files:
     // * mnist-cnn-model.gguf (trained ML weights)
     // * mnist-tests.gguf (10,000 MNIST test images)
