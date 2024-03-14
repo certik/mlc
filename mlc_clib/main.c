@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "inference-generated.h"
 #include "kernels.h"
 #include "display.h"
 #include "gguf.h"
@@ -95,15 +96,24 @@ int main() {
     */
 
     // (3, 3, 1, 32) -- row major, C-order, (H W C_in C_out)
-    f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
+    f32 *kernel1_ = (f32*) (ctx.data + ctx.infos[0].offset);
+    // (32, 1, 3, 3)
+    f32 *kernel1 = malloc(32*1*3*3*sizeof(f32));
+    transpose(3, 3, 1, 32, kernel1_, 3, 2, 0, 1, kernel1);
     // (32,)
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
     // (3, 3, 32, 64)
-    f32 *kernel2 = (f32*) (ctx.data + ctx.infos[2].offset);
+    f32 *kernel2_ = (f32*) (ctx.data + ctx.infos[2].offset);
+    // (32, 1, 3, 3)
+    f32 *kernel2 = malloc(32*64*3*3*sizeof(f32));
+    transpose(3, 3, 32, 64, kernel2_, 3, 2, 0, 1, kernel2);
     // (32,)
     f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
     // (1600, 10)
-    f32 *dense_w = (f32*) (ctx.data + ctx.infos[4].offset);
+    f32 *dense_w_ = (f32*) (ctx.data + ctx.infos[4].offset);
+    // (10, 1600)
+    f32 *dense_w = malloc(64*5*5*10*sizeof(f32));
+    transpose(5, 5, 64, 10, dense_w_, 3, 2, 0, 1, dense_w);
     // (10,)
     f32 *dense_b = (f32*) (ctx.data + ctx.infos[5].offset);
 
@@ -156,85 +166,17 @@ int main() {
 
 
         // (28, 28)
-        f32 *out = pDigits + digit_idx*28*28;
+        f32 *in = pDigits + digit_idx*28*28;
+        f32 *out = malloc(10*sizeof(f32));
 
-        // Conv2D
-        // (32, 1, 3, 3)
-        f32 *kernel1_ = malloc(32*1*3*3*sizeof(f32));
-        transpose(3, 3, 1, 32, kernel1, 3, 2, 0, 1, kernel1_);
-        f32 *out2 = malloc(32*26*26*sizeof(f32));
-        conv2d(1, 32, 3,
-            28, 28,
-            kernel1_, // (32, 1, 3, 3)
-            bias1, // (32,)
-            out, // (1, 28, 28)
-            out2 // (32, 26, 26)
-            );
-
-        // ReLU
-        f32 *out3 = malloc(32*26*26*sizeof(f32));
-        relu(32, 26, 26,
-            out2, // (32, 26, 26)
-            out3  // (32, 26, 26)
-            );
-
-        // MaxPool2D
-        f32 *out4 = malloc(32*13*13*sizeof(f32));
-        max_pool_2d(32, 26, 26,
-            out3, // (32, 26, 26)
-            out4  // (32, 13, 13)
-            );
-
-        // Conv2D
-        // (32, 1, 3, 3)
-        f32 *kernel2_ = malloc(32*64*3*3*sizeof(f32));
-        transpose(3, 3, 32, 64, kernel2, 3, 2, 0, 1, kernel2_);
-        f32 *out5 = malloc(64*11*11*sizeof(f32));
-        conv2d(32, 64, 3,
-            13, 13,
-            kernel2_, // (32, 64, 3, 3)
-            bias2, // (32,)
-            out4, // (32, 13, 13)
-            out5 // (64, 11, 11)
-            );
-
-        // ReLU
-        f32 *out6 = malloc(64*11*11*sizeof(f32));
-        relu(64, 11, 11,
-            out5, // (64, 11, 11)
-            out6  // (64, 11, 11)
-            );
-
-        // MaxPool2D
-        f32 *out7 = malloc(64*5*5*sizeof(f32));
-        max_pool_2d(64, 11, 11,
-            out6, // (64, 11, 11)
-            out7  // (64, 5, 5)
-            );
-
-        // Flatten: out7 (64, 5, 5) -> (1600,)
-
-        // Linear
-        f32 *dense_w_ = malloc(64*5*5*10*sizeof(f32));
-        transpose(5, 5, 64, 10, dense_w, 3, 2, 0, 1, dense_w_);
-        f32 *out8 = malloc(10*sizeof(f32));
-        saxpy(10, 1600,
-                dense_w_, // (10, 1600)
-                out7,     // (1600,)
-                dense_b,  // (10,)
-                out8      // (10,)
-            );
-
-        // Softmax
-        f32 *out9 = malloc(10*sizeof(f32));
-        softmax(10,
-                out8, // (10,)
-                out9  // (10,)
-            );
+        inference(in, out,
+                kernel1, bias1,
+                kernel2, bias2,
+                dense_w, dense_b);
 
         printf("Digit probabilities:\n");
-        print_A(out9);
-        int inferred_value = argmax(10, out9);
+        print_A(out);
+        int inferred_value = argmax(10, out);
         printf("Inferred value: %d\n", inferred_value);
         if (inferred_value != reference_value) {
             printf("FAIL: Inferred value does not match reference value.\n");

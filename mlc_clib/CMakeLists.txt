@@ -4,10 +4,9 @@ project(mlc_clib C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(mlc_clib
-        main.c
-        kernels.h
-        kernels.c
-        gguf.h
-        gguf.c
-        display.c
-        display.h)
+    main.c
+    kernels.c
+    gguf.c
+    display.c
+    inference-generated.c
+)
