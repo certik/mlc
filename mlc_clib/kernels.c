@@ -3,11 +3,8 @@
 //
 
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
 
-#include "assert.h"
 #include "kernels.h"
 
 
@@ -16,7 +13,7 @@
 #define I4(D1, D2, D3, D4, i, j, k, l) ((i)*(D4)*(D3)*(D2)+(j)*(D4)*(D3)+(k)*(D4)+(l))
 
 // A -> B
-void transpose(int n1, int n2, int n3, int n4, f32 *A,
+void transpose(int n1, int n2, int n3, int n4, const f32 *A,
                int t1, int t2, int t3, int t4, f32 *B) {
     for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n2; j++) {
@@ -30,11 +27,19 @@ void transpose(int n1, int n2, int n3, int n4, f32 *A,
     }
 }
 
-// (h, w)
-// Note: this is appending (+=) to `out`, must be initialized.
+/* (h, w)
+ *
+ * Note: this accumulates (+=) into `out`. `Out` must be
+ * initialized by the caller.
+ *
+ * The code below is specialized to a kernel (boxcar) size of 3x3
+ * because it reduces the raster width and height by
+ * kernel_size - 1. In general, the raster widths and heights must
+ * be decreased by floor(k/2),
+ */
 void conv2d_kernel(int kernel_size, int in_h, int in_w,
-                   f32 *weight, // (3,3)
-                   f32 *x, // (in_h,in_w)
+                   const f32 *weight, // (3,3)
+                   const f32 *x, // (in_h,in_w)
                    f32 *out // (out_w,out_h)
 ) {
     int out_w = in_w - (kernel_size - 1);
@@ -43,8 +48,9 @@ void conv2d_kernel(int kernel_size, int in_h, int in_w,
         for (int w = 0; w < out_w; w++) {
             for (int i = 0; i < kernel_size; i++) {
                 for (int j = 0; j < kernel_size; j++) {
-                    out[I2(out_h, out_w, h, w)] += weight[I2(3, 3, i, j)] * \
-                    x[I2(in_h, in_w, h + i, w + j)];
+                    out[I2(out_h, out_w, h, w)]
+                        += weight[I2(3, 3, i, j)]
+                        * x[I2(in_h, in_w, h + i, w + j)];
                 }
             }
         }
@@ -55,7 +61,7 @@ void conv2d_kernel(int kernel_size, int in_h, int in_w,
 void conv2d(int in_channels, int out_channels, int kernel_size,
             int in_h, int in_w,
             f32 *weight, // (out_channels,in_channels,3,3)
-            f32 *bias, // (out_channels,)
+            const f32 *bias, // (out_channels,)
             f32 *x, // (in_channels,in_h,in_w)
             f32 *out // (out_channels,out_h,out_w)
 ) {
@@ -85,7 +91,7 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
 
 // (channel, h, w)
 void relu(int in_channels, int in_h, int in_w,
-          f32 *x, // (in_channels,in_h,in_w)
+          const f32 *x, // (in_channels,in_h,in_w)
           f32 *out // (in_channels,in_h,in_w)
 ) {
     for (int c = 0; c < in_channels; c++) {
@@ -102,7 +108,7 @@ void relu(int in_channels, int in_h, int in_w,
     }
 }
 
-f32 max(int n, f32 *x) {
+f32 max(int n, const f32 *x) {
     f32 maxval = -1e10f;
     for (int i = 0; i < n; i++) {
         if (x[i] > maxval) maxval = x[i];
@@ -110,7 +116,7 @@ f32 max(int n, f32 *x) {
     return maxval;
 }
 
-int argmax(int n, f32 *x) {
+int argmax(int n, const f32 *x) {
     f32 maxval = -1e10f;
     int idx = -1;
     for (int i = 0; i < n; i++) {
@@ -122,7 +128,7 @@ int argmax(int n, f32 *x) {
     return idx;
 }
 
-f32 sum(int n, f32 *x) {
+f32 sum(int n, const f32 *x) {
     f32 sumval = 0;
     for (int i = 0; i < n; i++) {
         sumval += x[i];
@@ -144,9 +150,15 @@ void softmax(int n,
     }
 }
 
+/*
+ * Down-sample an input array by a factor of 2 in width and
+ * height, saving only the maximum value of the input map.
+ * Purpose is a bit of translation invariance. Often applied
+ * after a convolution.
+ */
 void max_pool_2d(int in_channels, int in_h, int in_w,
-                 const f32 *x, // (in_channels,in_h,in_w)
-                 f32 *out // (in_channels,in_h/2,in_w/2)
+                 const f32 *x, // (in_channels, in_h, in_w)
+                 f32 *out // (in_channels, in_h/2, in_w/2)
 ) {
     int out_w = in_w / 2;
     int out_h = in_h / 2;
@@ -157,7 +169,9 @@ void max_pool_2d(int in_channels, int in_h, int in_w,
                 for (int i2 = 0; i2 < 2; i2++) {
                     for (int j2 = 0; j2 < 2; j2++) {
                         f32 val = x[I3(in_channels, in_h, in_w, c, 2 * i + i2, 2 * j + j2)];
-                        if (val > max) max = val;
+                        if (val > max) {
+                            max = val;
+                        }
                     }
                 }
                 out[I3(in_channels, out_h, out_w, c, i, j)] = max;
@@ -168,9 +182,9 @@ void max_pool_2d(int in_channels, int in_h, int in_w,
 
 // out = matmul(A, x) + y
 void saxpy(int m, int n,
-           f32 *A,  // (m, n)
-           f32 *x,  // (n,)
-           f32 *y,  // (m,)
+           const f32 *A,  // (m, n)
+           const f32 *x,  // (n,)
+           const f32 *y,  // (m,)
            f32 *out // (m,)
 ) {
     for (int i = 0; i < m; i++) {
