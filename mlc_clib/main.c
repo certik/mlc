@@ -237,6 +237,10 @@ int main() {
     f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
     // (32,)
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
+    // (3, 3, 32, 64)
+    f32 *kernel2 = (f32*) (ctx.data + ctx.infos[2].offset);
+    // (32,)
+    f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
 
     // (28, 28)
     f32 *out = pDigits + digit_idx*28*28;
@@ -269,7 +273,19 @@ int main() {
         out4  // (32, 13, 13)
         );
 
-    print_A(&out4[I3(32,13,13,29,10,2)]);
+    // (32, 1, 3, 3)
+    f32 *kernel2_ = malloc(32*64*3*3*sizeof(f32));
+    transpose(3, 3, 32, 64, kernel2, 3, 2, 0, 1, kernel2_);
+    f32 *out5 = malloc(64*11*11*sizeof(f32));
+    conv2d(32, 64, 3,
+        13, 13,
+        kernel2_, // (32, 64, 3, 3)
+        bias2, // (32,)
+        out4, // (32, 13, 13)
+        out5 // (64, 11, 11)
+        );
+
+    print_A(&out5[I3(64,11,11,2,0,0)]);
 
     return 0;
 }
