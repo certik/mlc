@@ -139,6 +139,7 @@ int main() {
             // Draw 4201'th digit in the file.
             draw_digit(pDigits + (digit_idx * digit_size));
         }
+        int reference_value;
         {
             assert(ctx_test.infos[1].ne[0] == 10000);
             assert(ctx_test.infos[1].type == GGML_TYPE_I8);
@@ -148,8 +149,9 @@ int main() {
             assert(sizeof(uint8_t) == 1);
             assert(digit_ref_bytes != NULL);
 
+            reference_value = digit_ref_bytes[digit_idx];
             printf("Reference value: %u; digit index %d\n",
-                    digit_ref_bytes[digit_idx], digit_idx);
+                    reference_value, digit_idx);
         }
 
 
@@ -232,7 +234,12 @@ int main() {
 
         printf("Digit probabilities:\n");
         print_A(out9);
-        printf("Inferred value: %d\n", argmax(10, out9));
+        int inferred_value = argmax(10, out9);
+        printf("Inferred value: %d\n", inferred_value);
+        if (inferred_value != reference_value) {
+            printf("FAIL: Inferred value does not match reference value.\n");
+            //return 1;
+        }
     }
 
     return 0;
