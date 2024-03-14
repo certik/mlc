@@ -125,6 +125,23 @@ void max_pool_2d(int in_channels, int in_h, int in_w,
     }
 }
 
+// out = matmul(A, x) + y
+void saxpy(int m, int n,
+        f32 *A,  // (m, n)
+        f32 *x,  // (n,)
+        f32 *y,  // (m,)
+        f32 *out // (m,)
+        )
+{
+    for (int i=0; i<m; i++) {
+        out[i] = 0;
+        for (int j=0; j<n; j++) {
+            out[i] += A[I2(m,n,i,j)] * x[j];
+        }
+        out[i] += y[i];
+    }
+}
+
 int main() {
     // Follow the instructions in the README. The `mnist-tf` script will
     // generate two GGUF files:
@@ -241,6 +258,10 @@ int main() {
     f32 *kernel2 = (f32*) (ctx.data + ctx.infos[2].offset);
     // (32,)
     f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
+    // (1600, 10)
+    f32 *dense_w = (f32*) (ctx.data + ctx.infos[4].offset);
+    // (10,)
+    f32 *dense_b = (f32*) (ctx.data + ctx.infos[5].offset);
 
     // (28, 28)
     f32 *out = pDigits + digit_idx*28*28;
@@ -248,10 +269,10 @@ int main() {
     print_A(&out[I2(28, 28, 14, 13)]);
     print_A(kernel1);
 
+    // Conv2D
     // (32, 1, 3, 3)
     f32 *kernel1_ = malloc(32*1*3*3*sizeof(f32));
     transpose(3, 3, 1, 32, kernel1, 3, 2, 0, 1, kernel1_);
-
     f32 *out2 = malloc(32*26*26*sizeof(f32));
     conv2d(1, 32, 3,
         28, 28,
@@ -261,18 +282,21 @@ int main() {
         out2 // (32, 26, 26)
         );
 
+    // ReLU
     f32 *out3 = malloc(32*26*26*sizeof(f32));
     relu(32, 26, 26,
         out2, // (32, 26, 26)
         out3  // (32, 26, 26)
         );
 
+    // MaxPool2D
     f32 *out4 = malloc(32*13*13*sizeof(f32));
     max_pool_2d(32, 26, 26,
         out3, // (32, 26, 26)
         out4  // (32, 13, 13)
         );
 
+    // Conv2D
     // (32, 1, 3, 3)
     f32 *kernel2_ = malloc(32*64*3*3*sizeof(f32));
     transpose(3, 3, 32, 64, kernel2, 3, 2, 0, 1, kernel2_);
@@ -285,19 +309,34 @@ int main() {
         out5 // (64, 11, 11)
         );
 
+    // ReLU
     f32 *out6 = malloc(64*11*11*sizeof(f32));
     relu(64, 11, 11,
         out5, // (64, 11, 11)
         out6  // (64, 11, 11)
         );
 
+    // MaxPool2D
     f32 *out7 = malloc(64*5*5*sizeof(f32));
     max_pool_2d(64, 11, 11,
         out6, // (64, 11, 11)
         out7  // (64, 5, 5)
         );
 
-    print_A(&out7[I3(64,5,5,0,0,0)]);
+    // Flatten: out7 (64, 5, 5) -> (1600,)
+
+    // Linear
+    f32 *dense_w_ = malloc(64*5*5*10*sizeof(f32));
+    transpose(5, 5, 64, 10, dense_w, 3, 2, 0, 1, dense_w_);
+    f32 *out8 = malloc(10*sizeof(f32));
+    saxpy(10, 1600,
+            dense_w_, // (10, 1600)
+            out7,     // (1600,)
+            dense_b,  // (10,)
+            out8      // (10,)
+        );
+
+    print_A(out8);
 
     return 0;
 }
