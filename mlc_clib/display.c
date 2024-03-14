@@ -7,7 +7,11 @@
 #include "display.h"
 
 
-static const char *shades = " .:+#"; // " ░▒▓█"; // No Unicode?
+static const char *shade0 = " ";
+static const char *shade1 = "░";
+static const char *shade2 = "▒";
+static const char *shade3 = "▓";
+static const char *shade4 = "█";
 static const char *boxtop = "╔════════════════════════════════════════════════════════╗";
 static const char *boxbtm = "╚════════════════════════════════════════════════════════╝";
 static const char *boxsid = "║";
@@ -19,15 +23,15 @@ void draw_digit(const f32 *p28x28) {
         for (int col = 0; col < 28; col++) {
             f32 v = p28x28[col + (28 * row)];
             if (v > 0.99) {
-                printf("%c%c", shades[4], shades[4]);
+                printf("%s%s", shade4, shade4);
             } else if (v > 0.75) {
-                printf("%c%c", shades[3], shades[3]);
+                printf("%s%s", shade3, shade3);
             } else if (v > 0.50) {
-                printf("%c%c", shades[2], shades[2]);
+                printf("%s%s", shade2, shade2);
             } else if (v > 0.25) {
-                printf("%c%c", shades[1], shades[1]);
+                printf("%s%s", shade1, shade1);
             } else {
-                printf("%c%c", shades[0], shades[0]);
+                printf("%s%s", shade0, shade0);
             }
         }
         printf("%s\n", boxsid);

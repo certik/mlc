@@ -82,7 +82,24 @@ def convert(model_name):
     gguf_writer.write_kv_data_to_file()
     gguf_writer.write_tensors_to_file()
     gguf_writer.close()
-    print("Model converted and saved to '{}'".format(gguf_model_name))
+    print(f"Model converted and saved to '{gguf_model_name}'")
+
+def convert_tests(model_name):
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+    print(x_test.dtype)
+    print(y_test.dtype)
+
+    gguf_model_name = model_name + ".gguf"
+    gguf_writer = gguf.GGUFWriter(gguf_model_name, "mnist-cnn")
+
+    gguf_writer.add_tensor("x_test", np.array(x_test, dtype=np.int8))
+    gguf_writer.add_tensor("y_test", np.array(y_test, dtype=np.int8))
+
+    gguf_writer.write_header_to_file()
+    gguf_writer.write_kv_data_to_file()
+    gguf_writer.write_tensors_to_file()
+    gguf_writer.close()
+    print(f"MNIST test data saved to '{gguf_model_name}'")
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
@@ -92,6 +109,8 @@ if __name__ == '__main__':
         train(sys.argv[2])
     elif sys.argv[1] == 'convert':
         convert(sys.argv[2])
+    elif sys.argv[1] == 'convert_tests':
+        convert_tests(sys.argv[2])
     else:
         print("Usage: %s <train|convert> <model_name>".format(sys.argv[0]))
         sys.exit(1)

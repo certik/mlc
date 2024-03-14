@@ -118,16 +118,16 @@ def relu(x):
     y[x < 0] = 0
     return y
 
-# (batch, w, h)
+# (channel, w, h)
 def max_pool_2d(x):
-    batch, w, h = x.shape
+    channel, w, h = x.shape
     w2 = w//2
     h2 = h//2
-    r = np.empty((batch, w2, h2), dtype=x.dtype)
-    for b in range(batch):
+    r = np.empty((channel, w2, h2), dtype=x.dtype)
+    for c in range(channel):
         for i in range(w2):
             for j in range(h2):
-                r[b, i, j] = np.max(x[b, 2*i:2*i+2, 2*j:2*j+2])
+                r[c, i, j] = np.max(x[c, 2*i:2*i+2, 2*j:2*j+2])
     return r
 
 # (h, w)
@@ -228,6 +228,7 @@ def main():
 
     for iter in range(N_iter):
         i = random.randint(0, N_test)
+        i = 4212
         print("Input digit index:", i)
         inp = x_test[i,:,:]
         draw_digit(inp)

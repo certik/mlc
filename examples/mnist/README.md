@@ -12,10 +12,13 @@ format:
 
     python mnist-tf.py train mnist-cnn-model
     python mnist-tf.py convert mnist-cnn-model
+    python mnist-tf.py convert_tests mnist-tests
 
 The first command downloads the MNIST dataset and trains the neural network.
 The training takes about 1min 20s on Apple M1 Max, it automatically runs in
-parallel. The second command creates `mnist-cnn-model.gguf`.
+parallel. The second command creates `mnist-cnn-model.gguf`. The third command
+creates `mnist-tests.gguf` with the 10,000 MNIST test images and reference
+results.
 
 ## Model Weights
 
