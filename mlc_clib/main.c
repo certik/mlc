@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "kernels.h"
 #include "display.h"
@@ -101,6 +102,39 @@ void relu(int in_channels, int in_h, int in_w,
                 out[I3(in_channels,in_h,in_w,c,i,j)] = 0;
             }
         }}
+    }
+}
+
+f32 max(int n, f32 *x)
+{
+    f32 maxval = -1e10;
+    for (int i=0; i<n; i++) {
+        if (x[i] > maxval) maxval = x[i];
+    }
+    return maxval;
+}
+
+f32 sum(int n, f32 *x)
+{
+    f32 sumval = 0;
+    for (int i=0; i<n; i++) {
+        sumval += x[i];
+    }
+    return sumval;
+}
+
+void softmax(int n,
+        f32 *x,  // (n,)
+        f32 *out // (n,)
+        )
+{
+    f32 maxval = max(n, x);
+    for (int i=0; i<n; i++) {
+        out[i] = exp(x[i] - maxval);
+    }
+    f32 sumval = sum(n, out);
+    for (int i=0; i<n; i++) {
+        out[i] = out[i] / sumval;
     }
 }
 
@@ -336,7 +370,14 @@ int main() {
             out8      // (10,)
         );
 
-    print_A(out8);
+    // Softmax
+    f32 *out9 = malloc(10*sizeof(f32));
+    softmax(10,
+            out8, // (10,)
+            out9  // (10,)
+        );
+
+    print_A(out9);
 
     return 0;
 }
