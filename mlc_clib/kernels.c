@@ -7,33 +7,49 @@
 
 #include "kernels.h"
 
-
+/*
+ * Index computations, from multi-dimensional indices to linear
+ * indices. The rightmost index increases fastest. These
+ * expressions do not actually depend on, D1, the size of the
+ * slowest dimension, but it is included in the signature for
+ * symmetry.
+ */
 #define I2(D1, D2, i, j) ((i)*(D2)+(j))
 #define I3(D1, D2, D3, i, j, k) ((i)*(D3)*(D2)+(j)*(D3)+(k))
 #define I4(D1, D2, D3, D4, i, j, k, l) ((i)*(D4)*(D3)*(D2)+(j)*(D4)*(D3)+(k)*(D4)+(l))
 
 // A -> B
+/*
+ * Permute the dimensions as follows:
+ *
+ *     (1 2 3 4) ->
+ *     (4 3 1 2)
+ *
+ * TODO: This is a hard-coded special case.
+ */
 void transpose(int n1, int n2, int n3, int n4, const f32 *A,
                int t1, int t2, int t3, int t4, f32 *B) {
     for (int i = 0; i < n1; i++) {
         for (int j = 0; j < n2; j++) {
             for (int k = 0; k < n3; k++) {
                 for (int l = 0; l < n4; l++) {
-                    // TODO: for now the transposition is hardwired to (3,2,0,1)
-                    B[I4(n4, n3, n1, n2, l, k, i, j)] = A[I4(n1, n2, n3, n4, i, j, k, l)];
+                    // TODO: for now the transposition is
+                    // hardwired to (3,2,0,1)
+                    B[I4(n4, n3, n1, n2, l, k, i, j)] =
+                        A[I4(n1, n2, n3, n4, i, j, k, l)];
                 }
             }
         }
     }
 }
 
-/* (h, w)
+// (h, w)
+/*
+ * Note: Accumulate (+=) into `out`. `Out` must be initialized by
+ * the caller.
  *
- * Note: this accumulates (+=) into `out`. `Out` must be
- * initialized by the caller.
- *
- * The code below is specialized to a kernel (boxcar) size of 3x3
- * because it reduces the raster width and height by
+ * The code below is specialized to a square kernel (boxcar) size
+ * of 3x3 because it reduces the raster width and height by
  * kernel_size - 1. In general, the raster widths and heights must
  * be decreased by floor(k/2),
  */
@@ -57,7 +73,19 @@ void conv2d_kernel(int kernel_size, int in_h, int in_w,
     }
 }
 
+
 // (batch, channel, h, w)
+/*
+ * Multiple-In-Channel, Multiple-out-channel 2D Convolution.
+ *
+ * Note: Accumulate (+=) into `out`. `Out` must be initialized by
+ * the caller.
+ *
+ * The code below is specialized to a square kernel (boxcar) size
+ * of 3x3 because it reduces the raster width and height by
+ * kernel_size - 1. In general, the raster widths and heights must
+ * be decreased by floor(k/2),
+ */
 void conv2d(int in_channels, int out_channels, int kernel_size,
             int in_h, int in_w,
             f32 *weight, // (out_channels,in_channels,3,3)
@@ -82,14 +110,20 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
         }
         for (int i = 0; i < out_h; i++) {
             for (int j = 0; j < out_w; j++) {
-                out[I3(out_channels, out_h, out_w, c, i, j)] = bias[c] + \
-                s[I2(out_h, out_w, i, j)];
+                out[I3(out_channels, out_h, out_w, c, i, j)]
+                    = bias[c] + s[I2(out_h, out_w, i, j)];
             }
         }
     }
 }
 
 // (channel, h, w)
+/*
+ * ReLU (rectified linear units) is defined as f(x) = max(0, x),
+ * the identity function with the left (negative) half of the real
+ * line zero'd out. Its purpose in training is to prevent
+ * saturation of gradients (https://paperswithcode.com/method/relu).
+ */
 void relu(int in_channels, int in_h, int in_w,
           const f32 *x, // (in_channels,in_h,in_w)
           f32 *out // (in_channels,in_h,in_w)
@@ -108,6 +142,9 @@ void relu(int in_channels, int in_h, int in_w,
     }
 }
 
+/*
+ * Find largest value.
+ */
 f32 max(int n, const f32 *x) {
     f32 maxval = -1e10f;
     for (int i = 0; i < n; i++) {
@@ -116,6 +153,9 @@ f32 max(int n, const f32 *x) {
     return maxval;
 }
 
+/*
+ * Find index of largest value.
+ */
 int argmax(int n, const f32 *x) {
     f32 maxval = -1e10f;
     int idx = -1;
@@ -136,6 +176,9 @@ f32 sum(int n, const f32 *x) {
     return sumval;
 }
 
+/*
+ * https://paperswithcode.com/method/softmax
+ */
 void softmax(int n,
              f32 *x,  // (n,)
              f32 *out // (n,)
@@ -153,8 +196,8 @@ void softmax(int n,
 /*
  * Down-sample an input array by a factor of 2 in width and
  * height, saving only the maximum value of the input map.
- * Purpose is a bit of translation invariance. Often applied
- * after a convolution.
+ *
+ * https://paperswithcode.com/method/max-pooling
  */
 void max_pool_2d(int in_channels, int in_h, int in_w,
                  const f32 *x, // (in_channels, in_h, in_w)
