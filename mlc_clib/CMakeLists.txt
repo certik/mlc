@@ -10,4 +10,6 @@ add_executable(mlc_clib
         gguf.h
         gguf.c
         display.c
-        display.h)
+        display.h
+        inference-generated.c
+)
