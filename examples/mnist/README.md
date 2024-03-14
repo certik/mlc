@@ -7,6 +7,31 @@ Create and load Conda environment:
     mamba env create -f environment_tf.yml
     conda activate tf
 
+### Custom Build of `mnist-tf.py`
+
+Until the following pull request is merged
+
+    https://github.com/ggerganov/llama.cpp/pull/6045
+
+you will need a temporary build of `mnist-tf.py`. See this issue
+for more information:
+
+    https://github.com/certik/mlc/issues/36
+
+In short, in your local directory where you pull github repos, you
+can try the following:
+
+```bash
+conda activate tf
+git clone https://github.com/certik/llama.cpp.git
+cd llama.cpp
+git checkout -t origin/gguf_writer
+cd gguf-py
+pip install .
+```
+
+### Train, Convert, and Store Models and Data
+
 Train the MNIST model using TensorFlow and save the model arrays in the GGUF
 format:
 
