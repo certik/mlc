@@ -48,10 +48,13 @@ void transpose(int n1, int n2, int n3, int n4, const f32 *A,
  * Note: Accumulate (+=) into `out`. `Out` must be initialized by
  * the caller.
  *
- * The code below is specialized to a square kernel (boxcar) size
- * of 3x3 because it reduces the raster width and height by
- * kernel_size - 1. In general, the raster widths and heights must
- * be decreased by floor(k/2),
+ * https://paperswithcode.com/method/convolution
+ *
+ * The code below is specialized to a square kernel (boxcar) of
+ * odd size (1, 3, 5, ..). It reduces the iterations by k-1 and
+ * indexes the boxcar from 0. For an even-sized boxcar, decrease
+ * the outer iteration count by 2 * floor(k / 2), which also
+ * happens to work for odd-sized boxcars.
  */
 void conv2d_kernel(int kernel_size, int in_h, int in_w,
                    const f32 *weight, // (3,3)
@@ -78,13 +81,16 @@ void conv2d_kernel(int kernel_size, int in_h, int in_w,
 /*
  * Multiple-In-Channel, Multiple-out-channel 2D Convolution.
  *
+ * https://paperswithcode.com/method/convolution
+ *
  * Note: Accumulate (+=) into `out`. `Out` must be initialized by
  * the caller.
  *
- * The code below is specialized to a square kernel (boxcar) size
- * of 3x3 because it reduces the raster width and height by
- * kernel_size - 1. In general, the raster widths and heights must
- * be decreased by floor(k/2),
+ * The code below is specialized to a square kernel (boxcar) of
+ * odd size (1, 3, 5, ..). It reduces the iterations by k-1 and
+ * indexes the boxcar from 0. For an even-sized boxcar, decrease
+ * the outer iteration count by 2 * floor(k / 2), which also
+ * happens to work for odd-sized boxcars.
  */
 void conv2d(int in_channels, int out_channels, int kernel_size,
             int in_h, int in_w,
