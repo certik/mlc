@@ -85,6 +85,26 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
     }
 }
 
+// (channel, h, w)
+void relu(int in_channels, int in_h, int in_w,
+        f32 *x, // (in_channels,in_h,in_w)
+        f32 *out // (in_channels,in_h,in_w)
+        )
+{
+    for (int c = 0; c < in_channels; c++) {
+        for (int i=0; i<in_h; i++) {
+        for (int j=0; j<in_w; j++) {
+            f32 val = x[I3(in_channels,in_h,in_w,c,i,j)];
+            if (val > 0) {
+                out[I3(in_channels,in_h,in_w,c,i,j)] = val;
+            } else {
+                out[I3(in_channels,in_h,in_w,c,i,j)] = 0;
+            }
+
+        }}
+    }
+}
+
 int main() {
     // Follow the instructions in the README. The `mnist-tf` script will
     // generate two GGUF files:
