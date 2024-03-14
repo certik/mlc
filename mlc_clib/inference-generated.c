@@ -15,8 +15,16 @@ void inference(
         f32 *dense_w, // (1600, 10)
         f32 *dense_b // (10,)
     ) {
-    // Conv2D
+    // Temporary arrays
     f32 *out2 = malloc(32*26*26*sizeof(f32));
+    f32 *out3 = malloc(32*26*26*sizeof(f32));
+    f32 *out4 = malloc(32*13*13*sizeof(f32));
+    f32 *out5 = malloc(64*11*11*sizeof(f32));
+    f32 *out6 = malloc(64*11*11*sizeof(f32));
+    f32 *out7 = malloc(64*5*5*sizeof(f32));
+    f32 *out8 = malloc(10*sizeof(f32));
+
+    // Conv2D
     conv2d(1, 32, 3,
         28, 28,
         kernel1, // (32, 1, 3, 3)
@@ -26,21 +34,18 @@ void inference(
         );
 
     // ReLU
-    f32 *out3 = malloc(32*26*26*sizeof(f32));
     relu(32, 26, 26,
         out2, // (32, 26, 26)
         out3  // (32, 26, 26)
         );
 
     // MaxPool2D
-    f32 *out4 = malloc(32*13*13*sizeof(f32));
     max_pool_2d(32, 26, 26,
         out3, // (32, 26, 26)
         out4  // (32, 13, 13)
         );
 
     // Conv2D
-    f32 *out5 = malloc(64*11*11*sizeof(f32));
     conv2d(32, 64, 3,
         13, 13,
         kernel2, // (32, 64, 3, 3)
@@ -50,14 +55,12 @@ void inference(
         );
 
     // ReLU
-    f32 *out6 = malloc(64*11*11*sizeof(f32));
     relu(64, 11, 11,
         out5, // (64, 11, 11)
         out6  // (64, 11, 11)
         );
 
     // MaxPool2D
-    f32 *out7 = malloc(64*5*5*sizeof(f32));
     max_pool_2d(64, 11, 11,
         out6, // (64, 11, 11)
         out7  // (64, 5, 5)
@@ -66,7 +69,6 @@ void inference(
     // Flatten: out7 (64, 5, 5) -> (1600,)
 
     // Linear
-    f32 *out8 = malloc(10*sizeof(f32));
     saxpy(10, 1600,
             dense_w,  // (10, 1600)
             out7,     // (1600,)
