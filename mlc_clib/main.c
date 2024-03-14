@@ -104,6 +104,27 @@ void relu(int in_channels, int in_h, int in_w,
     }
 }
 
+void max_pool_2d(int in_channels, int in_h, int in_w,
+        f32 *x, // (in_channels,in_h,in_w)
+        f32 *out // (in_channels,in_h/2,in_w/2)
+        )
+{
+    int out_w = in_w/2;
+    int out_h = in_h/2;
+    for (int c = 0; c < in_channels; c++) {
+        for (int i=0; i<out_h; i++) {
+        for (int j=0; j<out_w; j++) {
+            f32 max = -1e10;
+            for (int i2=0; i2<2; i2++) {
+            for (int j2=0; j2<2; j2++) {
+                f32 val = x[I3(in_channels,in_h,in_w,c,2*i+i2,2*j+j2)];
+                if (val > max) max = val;
+            }}
+            out[I3(in_channels,out_h,out_w,c,i,j)] = max;
+        }}
+    }
+}
+
 int main() {
     // Follow the instructions in the README. The `mnist-tf` script will
     // generate two GGUF files:
@@ -239,11 +260,16 @@ int main() {
     f32 *out3 = malloc(32*26*26*sizeof(f32));
     relu(32, 26, 26,
         out2, // (32, 26, 26)
-        out3 // (32, 26, 26)
+        out3  // (32, 26, 26)
         );
 
-    //print_A(&out3[I3(32,26,26,7,18,15)]);
-    //print_A(&out3[I3(32,26,26,8,18,15)]);
+    f32 *out4 = malloc(32*13*13*sizeof(f32));
+    max_pool_2d(32, 26, 26,
+        out3, // (32, 26, 26)
+        out4  // (32, 13, 13)
+        );
+
+    print_A(&out4[I3(32,13,13,29,10,2)]);
 
     return 0;
 }
