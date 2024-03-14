@@ -2,6 +2,8 @@
 // Created by Brian Beckman on 3/12/24.
 //
 
+#include <unistd.h>
+#include <sys/param.h>
 #include "gguf.h"
 
 int ggml_blck_size(enum ggml_type type) {
@@ -48,6 +50,10 @@ static bool gguf_fread_str(FILE * file, struct gguf_str * p, size_t * offset) {
 
 int gguf_read(const char *fname, struct gguf_context *ctx)
 {
+    char cwdbuf[MAXPATHLEN + 1];  // paranoia at the end in case docs are misunderstood or wrong
+    getcwd(cwdbuf, MAXPATHLEN);
+    // Inspect in debugger in case of failures to open.
+
     FILE * file = fopen(fname, "rb");
     if (!file) {
         fprintf(stderr, "%s: failed to open `%s`\n", __func__, fname);
