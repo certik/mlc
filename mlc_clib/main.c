@@ -291,7 +291,13 @@ int main() {
         out6  // (64, 11, 11)
         );
 
-    print_A(&out6[I3(64,11,11,0,0,0)]);
+    f32 *out7 = malloc(64*5*5*sizeof(f32));
+    max_pool_2d(64, 11, 11,
+        out6, // (64, 11, 11)
+        out7  // (64, 5, 5)
+        );
+
+    print_A(&out7[I3(64,5,5,0,0,0)]);
 
     return 0;
 }
