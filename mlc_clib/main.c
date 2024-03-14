@@ -114,6 +114,19 @@ f32 max(int n, f32 *x)
     return maxval;
 }
 
+int argmax(int n, f32 *x)
+{
+    f32 maxval = -1e10;
+    int idx = -1;
+    for (int i=0; i<n; i++) {
+        if (x[i] > maxval) {
+            maxval = x[i];
+            idx = i;
+        }
+    }
+    return idx;
+}
+
 f32 sum(int n, f32 *x)
 {
     f32 sumval = 0;
@@ -243,6 +256,7 @@ int main() {
         printf("GGUF file not read; return code = %d\n", r);
         return r;
     }
+    /*
     printf("File read successfuly.\n");
     printf("Magic:'%c%c%c%c'\n", ctx.header.magic[0], ctx.header.magic[1],
            ctx.header.magic[2], ctx.header.magic[3]);
@@ -283,6 +297,7 @@ int main() {
             }
         }
     }
+    */
 
     // (3, 3, 1, 32)
     f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
@@ -374,7 +389,9 @@ int main() {
             out9  // (10,)
         );
 
+    printf("Digit probabilities:\n");
     print_A(out9);
+    printf("Inferred value: %d\n", argmax(10, out9));
 
     return 0;
 }
