@@ -300,9 +300,6 @@ int main() {
     // (28, 28)
     f32 *out = pDigits + digit_idx*28*28;
 
-    print_A(&out[I2(28, 28, 14, 13)]);
-    print_A(kernel1);
-
     // Conv2D
     // (32, 1, 3, 3)
     f32 *kernel1_ = malloc(32*1*3*3*sizeof(f32));
