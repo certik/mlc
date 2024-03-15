@@ -52,13 +52,21 @@ class LLToCPUVisitor:
         self.tmpinout = {w.name: w for w in x.x_in} | \
             {w.name: w for w in x.x_out} | \
             {w.name: w for w in x.temporaries}
+
         self.inf_body = ""
         for instruction in x.instructions:
             self.visit(instruction)
+
         args = []
         for var in x.x_in + x.x_out + x.weights + x.temporaries:
             args.append(f"f32 *{var.name} /*{var.shape}*/")
         self.inf_calc_args = "        " + ",\n        ".join(args)
+
+        args = []
+        for var in x.temporaries:
+            args.append(f"f32 *{var.name} /*{var.shape}*/")
+        self.inf_alloc_temp_args = "        " + ",\n        ".join(args)
+
         self.cpu_c = f"""\
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,13 +80,7 @@ void inference_calculation(
 {self.inf_body}}}
 
 void allocate_temporaries(
-        f32 **out2,
-        f32 **out3,
-        f32 **out4,
-        f32 **out5,
-        f32 **out6,
-        f32 **out7,
-        f32 **out8
+{self.inf_alloc_temp_args}
 ) {{
     *out2 = malloc(32*26*26*sizeof(f32));
     *out3 = malloc(32*26*26*sizeof(f32));
