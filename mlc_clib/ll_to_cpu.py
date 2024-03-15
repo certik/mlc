@@ -48,8 +48,146 @@ class LLToCPUVisitor:
             raise Exception("Unsupported LLIR node: %s" % node_name)
 
     def visit_Inference(self, x):
-        self.cpu_c = ""
-        self.cpu_h = ""
+        self.weights = {w.name: w for w in x.weights}
+        self.tmpinout = {w.name: w for w in x.x_in} | \
+            {w.name: w for w in x.x_out} | \
+            {w.name: w for w in x.temporaries}
+
+        self.inf_body = ""
+        for instruction in x.instructions:
+            self.visit(instruction)
+
+        args = []
+        for var in x.x_in + x.x_out + x.weights + x.temporaries:
+            args.append(f"f32 *{var.name} /*{var.shape}*/")
+        self.inf_calc_args = "        " + ",\n        ".join(args)
+
+        args = []
+        for var in x.x_in + x.x_out + x.weights:
+            args.append(f"f32 *{var.name} /*{var.shape}*/")
+        self.inf_args = "        " + ",\n        ".join(args)
+
+        args = []
+        for var in x.temporaries:
+            args.append(f"*{var.name}")
+        assert len(args) > 0
+        self.inf_body_decl1 = ", ".join(args)
+
+        args = []
+        for var in x.temporaries:
+            args.append(f"&{var.name}")
+        self.inf_body_args1 = ", ".join(args)
+
+        args = []
+        for var in x.x_in + x.x_out + x.weights + x.temporaries:
+            args.append(var.name)
+        self.inf_body_args2 = ", ".join(args)
+
+        args = []
+        for var in x.temporaries:
+            args.append(f"f32 **{var.name} /*{var.shape}*/")
+        self.inf_alloc_temp_args = "        " + ",\n        ".join(args)
+
+        args = []
+        for var in x.temporaries:
+            dims = "*".join([str(s) for s in var.shape])
+            args.append(f"*{var.name} = malloc({dims}*sizeof(f32));")
+        self.inf_alloc_temp_body = "    " + "\n    ".join(args)
+
+        self.cpu_c = f"""\
+// This file was generated using `generate.py`. Do not modify by hand.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "inference-generated.h"
+#include "kernels.h"
+
+void inference_calculation(
+{self.inf_calc_args}
+    ) {{
+{self.inf_body}}}
+
+void allocate_temporaries(
+{self.inf_alloc_temp_args}
+) {{
+{self.inf_alloc_temp_body}
+}}
+
+void inference(
+{self.inf_args}
+) {{
+    f32 {self.inf_body_decl1};
+    allocate_temporaries({self.inf_body_args1});
+    inference_calculation({self.inf_body_args2});
+}}
+"""
+        self.cpu_h = f"""\
+// This file was generated using `generate.py`. Do not modify by hand.
+
+#include "kernels.h"
+
+void inference(
+{self.inf_args}
+    );
+
+void allocate_temporaries(
+{self.inf_alloc_temp_args}
+    );
+
+void inference_calculation(
+{self.inf_calc_args}
+    );
+"""
+
+    def visit_conv2d(self, x):
+        self.inf_body += f"""\
+    conv2d({x.in_channels}, {x.out_channels}, {x.kernel_size}, {x.H}, {x.W},
+        {x.kernel}, // {self.weights[x.kernel].shape}
+        {x.bias}, // {self.weights[x.bias].shape}
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_relu(self, x):
+        self.inf_body += f"""\
+    relu({x.in_channels}, {x.H}, {x.W},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_max_pool_2d(self, x):
+        self.inf_body += f"""\
+    max_pool_2d({x.in_channels}, {x.H}, {x.W},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_reshape(self, x):
+        self.inf_body += f"""\
+    // NOOP: Reshape({x.x_inout}, {x.shape})
+"""
+
+    def visit_saxpy(self, x):
+        self.inf_body += f"""\
+    saxpy({x.m}, {x.n},
+        {x.A}, // {self.weights[x.A].shape}
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.y}, // {self.weights[x.y].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_softmax(self, x):
+        self.inf_body += f"""\
+    softmax({x.n},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
 
 def ll_to_cpu(ll: Inference):
     v = LLToCPUVisitor()

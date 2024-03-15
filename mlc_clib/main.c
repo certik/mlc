@@ -104,8 +104,8 @@ int main() {
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
     // (3, 3, 32, 64)
     f32 *kernel2_ = (f32*) (ctx.data + ctx.infos[2].offset);
-    // (32, 1, 3, 3)
-    f32 *kernel2 = malloc(32*64*3*3*sizeof(f32));
+    // (64, 32, 3, 3)
+    f32 *kernel2 = malloc(64*32*3*3*sizeof(f32));
     transpose(3, 3, 32, 64, kernel2_, 3, 2, 0, 1, kernel2);
     // (32,)
     f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
