@@ -46,22 +46,14 @@ int main() {
     assert(ctx_test.infos[0].ne[1] == 28);
     assert(ctx_test.infos[0].ne[2] == 10000);
     assert(ctx_test.infos[0].type == GGML_TYPE_I8);
-    f32 *pDigits;
+    uint8_t *pDigits_u8 = (uint8_t *) (ctx_test.data + ctx_test.infos[0].offset);
     size_t digit_w = ctx_test.infos[0].ne[0];
     size_t digit_h = ctx_test.infos[0].ne[1];
     int ndigits = ctx_test.infos[0].ne[2];
+    f32 *pDigits = malloc(ndigits * digit_w * digit_h * sizeof(f32));
     // Convert test data from u8 to f32
-    {
-        uint8_t *pDigits_u8 = (uint8_t *) (ctx_test.data + ctx_test.infos[0].offset);
-        pDigits = malloc(ndigits * digit_w * digit_h * sizeof(f32));
-        for (int i = 0; i < ndigits; i++) {
-            for (int j = 0; j < digit_h; j++) {
-                for (int k = 0; k < digit_w; k++) {
-                    pDigits[i*digit_w*digit_h+j*digit_w+k]
-                        = (f32)(pDigits_u8[i*digit_w*digit_h+j*digit_w+k]) / 255.f;
-                }
-            }
-        }
+    for (int i = 0; i < ndigits * digit_w * digit_h; i++) {
+        pDigits[i] = (f32)(pDigits_u8[i]) / 255.f;
     }
     assert(ctx_test.infos[1].ne[0] == 10000);
     assert(ctx_test.infos[1].type == GGML_TYPE_I8);
