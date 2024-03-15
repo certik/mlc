@@ -122,7 +122,23 @@ void inference(
     inference_calculation({self.inf_body_args2});
 }}
 """
-        self.cpu_h = ""
+        self.cpu_h = f"""\
+// This file was generated using `generate.py`. Do not modify by hand.
+
+#include "kernels.h"
+
+void inference(
+{self.inf_args}
+    );
+
+void allocate_temporaries(
+{self.inf_alloc_temp_args}
+    );
+
+void inference_calculation(
+{self.inf_calc_args}
+    );
+"""
 
     def visit_conv2d(self, x):
         self.inf_body += f"""\
