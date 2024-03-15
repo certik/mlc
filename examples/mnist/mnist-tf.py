@@ -58,6 +58,7 @@ def convert(model_name):
     gguf_writer = gguf.GGUFWriter(gguf_model_name, "mnist-cnn")
 
     kernel1 = model.layers[0].weights[0].numpy()
+    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
     kernel1 = np.transpose(kernel1, (3, 2, 0, 1))
     gguf_writer.add_tensor("kernel1", kernel1)
 
@@ -65,6 +66,7 @@ def convert(model_name):
     gguf_writer.add_tensor("bias1", bias1)
 
     kernel2 = model.layers[2].weights[0].numpy()
+    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
     kernel2 = np.transpose(kernel2, (3, 2, 0, 1))
     gguf_writer.add_tensor("kernel2", kernel2)
 
@@ -72,11 +74,19 @@ def convert(model_name):
     gguf_writer.add_tensor("bias2", bias2)
 
     dense_w = model.layers[-1].weights[0].numpy()
+    # (H*W*C_in, N_out) -> (H, W, C_in, N_out)
+    # (H, W, C_in, N_out) -> (N_out, C_in, H, W)
+    # (N_out, C_in, H, W) -> (N_out, C_in*H*W)
+    N_out = dense_w.shape[1] # 10
+    C_in = bias2.shape[0] # 64
+    H = int(np.sqrt(dense_w.shape[0] / C_in)) # 5
+    W = H # 5
+    assert H*W*C_in == dense_w.shape[0]
     dense_w = np.reshape(
             np.transpose(
-                np.reshape(dense_w, (5,5,64,10)),
+                np.reshape(dense_w, (H, W, C_in, N_out)),
                 (3, 2, 0, 1)
-            ), (10, 1600))
+            ), (N_out, C_in*H*W))
     gguf_writer.add_tensor("dense_w", dense_w)
 
     dense_b = model.layers[-1].weights[1].numpy()
