@@ -96,10 +96,7 @@ int main() {
     */
 
     // (3, 3, 1, 32) -- row major, C-order, (H W C_in C_out)
-    f32 *kernel1_ = (f32*) (ctx.data + ctx.infos[0].offset);
-    // (32, 1, 3, 3)
-    f32 *kernel1 = malloc(32*1*3*3*sizeof(f32));
-    transpose(3, 3, 1, 32, kernel1_, 3, 2, 0, 1, kernel1);
+    f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
     // (32,)
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
     // (3, 3, 32, 64)
