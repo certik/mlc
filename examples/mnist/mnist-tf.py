@@ -58,20 +58,25 @@ def convert(model_name):
     gguf_writer = gguf.GGUFWriter(gguf_model_name, "mnist-cnn")
 
     kernel1 = model.layers[0].weights[0].numpy()
-    #kernel1 = kernel1.astype(np.float16)
+    kernel1 = np.transpose(kernel1, (3, 2, 0, 1))
     gguf_writer.add_tensor("kernel1", kernel1)
 
     bias1 = model.layers[0].weights[1].numpy()
     gguf_writer.add_tensor("bias1", bias1)
 
     kernel2 = model.layers[2].weights[0].numpy()
-    #kernel2 = kernel2.astype(np.float16)
+    kernel2 = np.transpose(kernel2, (3, 2, 0, 1))
     gguf_writer.add_tensor("kernel2", kernel2)
 
     bias2 = model.layers[2].weights[1].numpy()
     gguf_writer.add_tensor("bias2", bias2)
 
     dense_w = model.layers[-1].weights[0].numpy()
+    dense_w = np.reshape(
+            np.transpose(
+                np.reshape(dense_w, (5,5,64,10)),
+                (3, 2, 0, 1)
+            ), (10, 1600))
     gguf_writer.add_tensor("dense_w", dense_w)
 
     dense_b = model.layers[-1].weights[1].numpy()

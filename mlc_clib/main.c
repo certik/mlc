@@ -96,24 +96,18 @@ int main() {
     */
 
     // (3, 3, 1, 32) -- row major, C-order, (H W C_in C_out)
-    f32 *kernel1_ = (f32*) (ctx.data + ctx.infos[0].offset);
     // (32, 1, 3, 3)
-    f32 *kernel1 = malloc(32*1*3*3*sizeof(f32));
-    transpose(3, 3, 1, 32, kernel1_, 3, 2, 0, 1, kernel1);
+    f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
     // (32,)
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
     // (3, 3, 32, 64)
-    f32 *kernel2_ = (f32*) (ctx.data + ctx.infos[2].offset);
     // (64, 32, 3, 3)
-    f32 *kernel2 = malloc(64*32*3*3*sizeof(f32));
-    transpose(3, 3, 32, 64, kernel2_, 3, 2, 0, 1, kernel2);
+    f32 *kernel2 = (f32*) (ctx.data + ctx.infos[2].offset);
     // (32,)
     f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
     // (1600, 10)
-    f32 *dense_w_ = (f32*) (ctx.data + ctx.infos[4].offset);
     // (10, 1600)
-    f32 *dense_w = malloc(64*5*5*10*sizeof(f32));
-    transpose(5, 5, 64, 10, dense_w_, 3, 2, 0, 1, dense_w);
+    f32 *dense_w = (f32*) (ctx.data + ctx.infos[4].offset);
     // (10,)
     f32 *dense_b = (f32*) (ctx.data + ctx.infos[5].offset);
 
