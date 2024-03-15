@@ -63,21 +63,21 @@ void inference_calculation(
 }
 
 void allocate_temporaries(
-        f32 **out2,
-        f32 **out3,
-        f32 **out4,
-        f32 **out5,
-        f32 **out6,
-        f32 **out7,
-        f32 **out8
+        f32 **tmp2 /*(32, 26, 26)*/,
+        f32 **tmp3 /*(32, 26, 26)*/,
+        f32 **tmp4 /*(32, 13, 13)*/,
+        f32 **tmp5 /*(64, 11, 11)*/,
+        f32 **tmp6 /*(64, 11, 11)*/,
+        f32 **tmp7 /*(64, 5, 5)*/,
+        f32 **tmp8 /*(10,)*/
 ) {
-    *out2 = malloc(32*26*26*sizeof(f32));
-    *out3 = malloc(32*26*26*sizeof(f32));
-    *out4 = malloc(32*13*13*sizeof(f32));
-    *out5 = malloc(64*11*11*sizeof(f32));
-    *out6 = malloc(64*11*11*sizeof(f32));
-    *out7 = malloc(64*5*5*sizeof(f32));
-    *out8 = malloc(10*sizeof(f32));
+    *tmp2 = malloc(32*26*26*sizeof(f32));
+    *tmp3 = malloc(32*26*26*sizeof(f32));
+    *tmp4 = malloc(32*13*13*sizeof(f32));
+    *tmp5 = malloc(64*11*11*sizeof(f32));
+    *tmp6 = malloc(64*11*11*sizeof(f32));
+    *tmp7 = malloc(64*5*5*sizeof(f32));
+    *tmp8 = malloc(10*sizeof(f32));
 }
 
 void inference(
