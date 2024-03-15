@@ -55,6 +55,10 @@ class LLToCPUVisitor:
         self.inf_body = ""
         for instruction in x.instructions:
             self.visit(instruction)
+        args = []
+        for var in x.x_in + x.x_out + x.weights + x.temporaries:
+            args.append(f"f32 *{var.name} /*{var.shape}*/")
+        self.inf_calc_args = "        " + ",\n        ".join(args)
         self.cpu_c = f"""\
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,21 +67,7 @@ class LLToCPUVisitor:
 #include "kernels.h"
 
 void inference_calculation(
-        f32 *in,      // (1, 28, 28)
-        f32 *out,     // (10,)
-        f32 *kernel1, // (32, 1, 3, 3)
-        f32 *bias1,   // (32,)
-        f32 *kernel2, // (32, 64, 3, 3)
-        f32 *bias2,   // (64,)
-        f32 *dense_w, // (1600, 10)
-        f32 *dense_b, // (10,)
-        f32 *out2,    // (32, 26, 26)
-        f32 *out3,    // (32, 26, 26)
-        f32 *out4,    // (32, 13, 13)
-        f32 *out5,    // (64, 11, 11)
-        f32 *out6,    // (64, 11, 11)
-        f32 *out7,    // (64, 5, 5)
-        f32 *out8     // (10,)
+{self.inf_calc_args}
     ) {{
 {self.inf_body}}}
 
