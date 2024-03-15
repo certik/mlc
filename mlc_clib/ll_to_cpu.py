@@ -79,8 +79,7 @@ void inference_calculation(
         f32 *out7,    // (64, 5, 5)
         f32 *out8     // (10,)
     ) {{
-{self.inf_body}
-}}
+{self.inf_body}}}
 
 void allocate_temporaries(
         f32 **out2,
