@@ -1,0 +1,7 @@
+name: pt
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12.2
+  - pytorch=2.1.2
+  - torchvision=0.16.1
