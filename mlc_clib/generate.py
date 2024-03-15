@@ -12,9 +12,9 @@ ll = Inference(
         weights=[
             Array("kernel1", f32(), (32, 1, 3, 3)),
             Array("bias1", f32(), (32,)),
-            Array("kernel2", f32(), (32, 64, 3, 3)),
+            Array("kernel2", f32(), (64, 32, 3, 3)),
             Array("bias2", f32(), (64,)),
-            Array("dense_w", f32(), (1600,10)),
+            Array("dense_w", f32(), (10, 1600)),
             Array("dense_b", f32(), (10,)),
         ],
         temporaries=[
@@ -35,7 +35,7 @@ ll = Inference(
             relu(64, 11, 11, "tmp5", "tmp6"),
             max_pool_2d(64, 11, 11, "tmp6", "tmp7"),
             reshape((1600,), "tmp7"),
-            saxpy(1600, 10, "dense_w", "dense_b", "tmp7", "tmp8"),
+            saxpy(10, 1600, "dense_w", "dense_b", "tmp7", "tmp8"),
             softmax(10, "tmp8", "out"),
         ]
     )
