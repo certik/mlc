@@ -95,17 +95,14 @@ int main() {
     }
     */
 
-    // (3, 3, 1, 32) -- row major, C-order, (H W C_in C_out)
-    // (32, 1, 3, 3)
+    // (32, 1, 3, 3) -- row major, C-order, (C_out, C_in, H, W)
     f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
     // (32,)
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
-    // (3, 3, 32, 64)
     // (64, 32, 3, 3)
     f32 *kernel2 = (f32*) (ctx.data + ctx.infos[2].offset);
-    // (32,)
+    // (64,)
     f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
-    // (1600, 10)
     // (10, 1600)
     f32 *dense_w = (f32*) (ctx.data + ctx.infos[4].offset);
     // (10,)
@@ -140,7 +137,6 @@ int main() {
                 }
             }
 
-            // Draw 4201'th digit in the file.
             draw_digit(pDigits + (digit_idx * digit_size));
         }
         int reference_value;
