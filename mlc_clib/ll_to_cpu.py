@@ -69,6 +69,12 @@ class LLToCPUVisitor:
 
         args = []
         for var in x.temporaries:
+            args.append(f"*{var.name}")
+        assert len(args) > 0
+        self.inf_body_decl1 = ", ".join(args)
+
+        args = []
+        for var in x.temporaries:
             args.append(f"f32 **{var.name} /*{var.shape}*/")
         self.inf_alloc_temp_args = "        " + ",\n        ".join(args)
 
@@ -99,7 +105,7 @@ void allocate_temporaries(
 void inference(
 {self.inf_args}
 ) {{
-    f32 *out2, *out3, *out4, *out5, *out6, *out7, *out8;
+    f32 {self.inf_body_decl1};
     allocate_temporaries(&out2, &out3, &out4, &out5, &out6, &out7, &out8);
     inference_calculation(in, out, kernel1, bias1, kernel2, bias2,
         dense_w, dense_b,
