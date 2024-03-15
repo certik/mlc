@@ -90,10 +90,7 @@ void inference(
         f32 *dense_w /*(10, 1600)*/,
         f32 *dense_b /*(10,)*/
 ) {
-    f32 *out2, *out3, *out4, *out5, *out6, *out7, *out8;
-    allocate_temporaries(&out2, &out3, &out4, &out5, &out6, &out7, &out8);
-    inference_calculation(in, out, kernel1, bias1, kernel2, bias2,
-        dense_w, dense_b,
-        out2, out3, out4, out5, out6, out7, out8
-        );
+    f32 *tmp2, *tmp3, *tmp4, *tmp5, *tmp6, *tmp7, *tmp8;
+    allocate_temporaries(&tmp2, &tmp3, &tmp4, &tmp5, &tmp6, &tmp7, &tmp8);
+    inference_calculation(in, out, kernel1, bias1, kernel2, bias2, dense_w, dense_b, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8);
 }
