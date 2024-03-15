@@ -63,7 +63,7 @@ jobs:
       - name: Install GGUF
         shell: bash -e -x -l {0}
         run: |
-            git clone --depth=1 https://github.com/ggerganov/llama.cpp
+            git clone https://github.com/ggerganov/llama.cpp
             cd llama.cpp
             git checkout 6e0438da3cc95b89cdbf55f45fa4e324d9076792
             cd gguf-py
