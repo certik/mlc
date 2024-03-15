@@ -69,21 +69,16 @@ def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
                 torch.nn.Softmax(dim=0),
                 )
 
-            kernel1_ = np.transpose(kernel1, (3,2,0,1))
             self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel1_.copy()))
+                    kernel1.copy()))
             self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
                     bias1.copy()))
-            kernel2_ = np.transpose(kernel2, (3,2,0,1))
             self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel2_.copy()))
+                    kernel2.copy()))
             self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
                     bias2.copy()))
-            dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
-            dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
-            dense_w_ = np.reshape(dense_w_, (10, 1600))
             self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
-                    dense_w_.copy()))
+                    dense_w.copy()))
             self.model[7].bias = torch.nn.Parameter(torch.from_numpy(
                     dense_b.copy()))
 
@@ -167,9 +162,8 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     out = inp_.copy()
 
     # Conv2D
-    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
-    kernel1_ = np.transpose(kernel1, (3,2,0,1))
-    out = conv2d(1, 32, 3, kernel1_, bias1, out)
+    # (C_out, C_in, H, W)
+    out = conv2d(1, 32, 3, kernel1, bias1, out)
 
     # ReLU
     out = relu(out)
@@ -178,9 +172,8 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     out = max_pool_2d(out)
 
     # Conv2D
-    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
-    kernel2_ = np.transpose(kernel2, (3,2,0,1))
-    out = conv2d(32, 64, 3, kernel2_, bias2, out)
+    # (C_out, C_in, H, W)
+    out = conv2d(32, 64, 3, kernel2, bias2, out)
 
     # ReLU
     out = relu(out)
@@ -192,13 +185,8 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     out = np.reshape(out, (1600,))
 
     # Linear
-    # (H*W*C_in, N_out) -> (H, W, C_in, N_out)
-    dense_w_ = np.reshape(dense_w, (5, 5, 64, 10))
-    # (H, W, C_in, N_out) -> (N_out, C_in, H, W)
-    dense_w_ = np.transpose(dense_w_, (3, 2, 0, 1))
-    # (N_out, C_in, H, W) -> (N_out, C_in*H*W)
-    dense_w_ = np.reshape(dense_w_, (10, 1600))
-    out = np.dot(dense_w_, out) + dense_b
+    # (N_out, C_in*H*W)
+    out = np.dot(dense_w, out) + dense_b
 
     # Softmax
     out = softmax(out)
