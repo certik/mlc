@@ -1,3 +1,5 @@
+// This file was generated using `generate.py`. Do not modify by hand.
+
 #include <stdio.h>
 #include <stdlib.h>
 

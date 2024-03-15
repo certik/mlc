@@ -95,6 +95,8 @@ class LLToCPUVisitor:
         self.inf_alloc_temp_body = "    " + "\n    ".join(args)
 
         self.cpu_c = f"""\
+// This file was generated using `generate.py`. Do not modify by hand.
+
 #include <stdio.h>
 #include <stdlib.h>
 
