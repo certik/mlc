@@ -72,19 +72,15 @@ class reshape(Instruction):
     shape: list[int]
     x_inout: str
 
-# (m, n) x (n,) + (n,)
+# x_out(m) = A(m, n) x x_in(n) + y(m)
 @dataclass
 class saxpy(Instruction):
     m: int
     n: int
-    # (m, n)
-    A_name: str # matrix A
-    # (n,)
-    y_name: str # vector y
-    # (n,)
-    x_in: str # input argument (x)
-    # (n,)
-    x_out: str # output argument
+    A: str # matrix A(m, n)
+    y: str # vector y(n)
+    x_in: str # input vector x_in(n)
+    x_out: str # output vector x_out(m)
 
 @dataclass
 class softmax(Instruction):

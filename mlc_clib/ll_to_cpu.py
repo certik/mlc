@@ -143,9 +143,9 @@ void inference(
     def visit_saxpy(self, x):
         self.inf_body += f"""\
     saxpy({x.m}, {x.n},
-        {x.A_name}, // {self.weights[x.A_name].shape}
+        {x.A}, // {self.weights[x.A].shape}
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
-        {x.y_name}, // {self.weights[x.y_name].shape}
+        {x.y}, // {self.weights[x.y].shape}
         {x.x_out} // {self.tmpinout[x.x_out].shape}
     );
 """
