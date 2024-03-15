@@ -6,7 +6,7 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 
-def train(model_name):
+def train(model_name, epochs):
     # Model / data parameters
     num_classes = 10
     input_shape = (28, 28, 1)
@@ -43,7 +43,6 @@ def train(model_name):
 
     model.summary()
     batch_size = 128
-    epochs = 1
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
     model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1)
 
@@ -106,7 +105,10 @@ if __name__ == '__main__':
         print("Usage: %s <train|convert> <model_name>".format(sys.argv[0]))
         sys.exit(1)
     if sys.argv[1] == 'train':
-        train(sys.argv[2])
+        epochs = 15
+        if len(sys.argv) == 4:
+            epochs = int(sys.argv[3])
+        train(sys.argv[2], epochs)
     elif sys.argv[1] == 'convert':
         convert(sys.argv[2])
     elif sys.argv[1] == 'convert_tests':
