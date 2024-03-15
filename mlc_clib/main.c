@@ -117,8 +117,8 @@ int main() {
     // (10,)
     f32 *dense_b = (f32*) (ctx.data + ctx.infos[5].offset);
 
-    for (int digit_idx_i=0; digit_idx_i < 13; digit_idx_i++) {
-        int digit_idx = 4212 + digit_idx_i;
+    for (int digit_idx_i=0; digit_idx_i < 11; digit_idx_i++) {
+        int digit_idx = 4213 + digit_idx_i;
         f32 *pDigits;
         uint8_t *digit_ref_bytes;
 
@@ -180,7 +180,7 @@ int main() {
         printf("Inferred value: %d\n", inferred_value);
         if (inferred_value != reference_value) {
             printf("FAIL: Inferred value does not match reference value.\n");
-            //return 1;
+            return 1;
         }
     }
 

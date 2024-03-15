@@ -10,3 +10,5 @@ add_executable(mlc_clib
     display.c
     inference-generated.c
 )
+
+target_link_libraries(mlc_clib m)

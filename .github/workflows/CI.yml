@@ -42,3 +42,53 @@ jobs:
         run: |
             pytest
             dot -Tpng mnist-cnn.dot -o mnist-cnn.dot.png
+
+  mnist:
+    name: MNIST
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: mamba-org/setup-micromamba@v1.8.0
+        with:
+          environment-file: examples/mnist/environment_tf.yml
+
+      - uses: hendrikmuhs/ccache-action@main
+        with:
+          variant: sccache
+          key: ${{ github.job }}-${{ matrix.os }}
+
+      - name: Install GGUF
+        shell: bash -e -x -l {0}
+        run: |
+            git clone https://github.com/ggerganov/llama.cpp
+            cd llama.cpp
+            git checkout 6e0438da3cc95b89cdbf55f45fa4e324d9076792
+            cd gguf-py
+            pip install .
+            cd ../..
+
+      - name: Train MNIST TensorFlow
+        shell: bash -e -x -l {0}
+        run: |
+            cd examples/mnist
+            python mnist-tf.py train mnist-cnn-model 1
+            python mnist-tf.py convert mnist-cnn-model
+            python mnist-tf.py convert_tests mnist-tests
+
+      - name: Run Python inference
+        shell: bash -e -x -l {0}
+        run: |
+            cd examples/mnist
+            python inference.py
+
+      - name: Run C inference
+        shell: bash -e -x -l {0}
+        run: |
+            cd mlc_clib
+            python generate.py
+            cmake .
+            make
+            ./mlc_clib
