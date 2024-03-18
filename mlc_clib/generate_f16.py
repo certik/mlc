@@ -39,7 +39,16 @@ ll = Inference(
             relu(32, 26, 26, "tmp2", "tmp3"),
             max_pool_2d(32, 26, 26, "tmp3", "tmp4"),
             conv2d(32, 64, 3, 13, 13, "kernel2", "bias2", "tmp4", "tmp5"),
-            relu(64, 11, 11, "tmp5", "tmp6"),
+
+            #relu(64, 11, 11, "tmp5", "tmp6"),
+            reshape((7744,), "tmp5"),
+            pad_32K_copy(7744, "tmp5", "tmp5b"),
+            cast_32K_f32_f16("tmp5b", "tmp5c"),
+            relu_32K_f16("tmp5c", "tmp5d"),
+            cast_32K_f16_f32("tmp5d", "tmp5e"),
+            section_32K_copy(7744, "tmp5e", "tmp6"),
+            reshape((64, 11, 11), "tmp6"),
+
             max_pool_2d(64, 11, 11, "tmp6", "tmp7"),
             reshape((1600,), "tmp7"),
             saxpy(10, 1600, "dense_w", "dense_b", "tmp7", "tmp8"),
