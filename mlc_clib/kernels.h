@@ -54,6 +54,12 @@ void saxpy(int m, int n,
         const f32 *y,  // (m,)
         f32 *out // (m,)
         );
+void saxpy_f16(int m, int n,
+        const f32 *A,  // (m, n)
+        const f16 *x,  // (n,)
+        const f32 *y,  // (m,)
+        f16 *out // (m,)
+        );
 
 void pad_32K_copy(
         int old_size,

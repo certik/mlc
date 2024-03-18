@@ -1,5 +1,5 @@
 from llir import (Inference, Array, f16, f32, conv2d, relu, max_pool_2d,
-        reshape, saxpy, softmax, pad_32K_copy, cast_32K_f16_f32,
+        reshape, saxpy, saxpy_f16, softmax, pad_32K_copy, cast_32K_f16_f32,
         cast_32K_f32_f16, section_32K_copy, relu_32K_f16)
 from ll_to_cpu import ll_to_cpu
 
@@ -30,7 +30,13 @@ ll = Inference(
             Array("tmp5e", f32(), (32768,)),
 
             Array("tmp6", f32(), (64, 11, 11)),
+
             Array("tmp7", f32(), (64, 5, 5)),
+            Array("tmp7b", f32(), (32768,)),
+            Array("tmp7c", f16(), (32768,)),
+            Array("tmp7d", f16(), (32768,)),
+            Array("tmp7e", f32(), (32768,)),
+
             Array("tmp8", f32(), (10,)),
         ],
         # Verify pass: the array arguments fully determine the parameters
@@ -51,7 +57,13 @@ ll = Inference(
 
             max_pool_2d(64, 11, 11, "tmp6", "tmp7"),
             reshape((1600,), "tmp7"),
-            saxpy(10, 1600, "dense_w", "dense_b", "tmp7", "tmp8"),
+
+            pad_32K_copy(1600, "tmp7", "tmp7b"),
+            cast_32K_f32_f16("tmp7b", "tmp7c"),
+            saxpy_f16(10, 1600, "dense_w", "dense_b", "tmp7c", "tmp7d"),
+            cast_32K_f16_f32("tmp7d", "tmp7e"),
+            section_32K_copy(10, "tmp7e", "tmp8"),
+
             softmax(10, "tmp8", "out"),
         ]
     )

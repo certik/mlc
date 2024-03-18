@@ -40,7 +40,7 @@ class LLToCPUVisitor:
     def visit(self, x):
         supported_nodes = ["Inference", "conv2d",
                            "relu", "max_pool_2d",
-                           "reshape", "saxpy",
+                           "reshape", "saxpy", "saxpy_f16",
                            "softmax",
                            "pad_32K_copy", "section_32K_copy",
                            "cast_32K_f32_f16", "cast_32K_f16_f32",
@@ -221,6 +221,16 @@ void inference_calculation(
     def visit_saxpy(self, x):
         self.inf_body += f"""\
     saxpy({x.m}, {x.n},
+        {x.A}, // {self.weights[x.A].shape}
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.y}, // {self.weights[x.y].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_saxpy_f16(self, x):
+        self.inf_body += f"""\
+    saxpy_f16({x.m}, {x.n},
         {x.A}, // {self.weights[x.A].shape}
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
         {x.y}, // {self.weights[x.y].shape}
