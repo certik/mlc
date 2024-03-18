@@ -1,12 +1,14 @@
-from llir import (Inference, Array, i32, i64, f32, f64, u8, u16, u32, u64)
+from llir import (Inference, Array, i32, i64, f16, f32, f64, u8, u16, u32, u64)
 
 def convert_LL_type(t):
     if isinstance(t, i32):
         stype = "int32_t"
     elif isinstance(t, i64):
         stype = "int64_t"
+    elif isinstance(t, f16):
+        stype = "f16"
     elif isinstance(t, f32):
-        stype = "float"
+        stype = "f32"
     elif isinstance(t, f64):
         stype = "double"
     elif isinstance(t, u8):
@@ -39,7 +41,10 @@ class LLToCPUVisitor:
         supported_nodes = ["Inference", "conv2d",
                            "relu", "max_pool_2d",
                            "reshape", "saxpy",
-                           "softmax"
+                           "softmax",
+                           "pad_32K_copy", "section_32K_copy",
+                           "cast_32K_f32_f16", "cast_32K_f16_f32",
+                           "relu_32K_f16",
                            ]
         node_name = type(x).__name__
         if node_name in supported_nodes:
@@ -59,19 +64,19 @@ class LLToCPUVisitor:
 
         args = []
         for var in x.x_in + x.x_out + x.weights + x.temporaries:
-            args.append(f"f32 *{var.name} /*{var.shape}*/")
+            args.append(f"{convert_LL_type2(var)} *{var.name} /*{var.shape}*/")
         self.inf_calc_args = "        " + ",\n        ".join(args)
 
         args = []
         for var in x.x_in + x.x_out + x.weights:
-            args.append(f"f32 *{var.name} /*{var.shape}*/")
+            args.append(f"{convert_LL_type2(var)} *{var.name} /*{var.shape}*/")
         self.inf_args = "        " + ",\n        ".join(args)
 
         args = []
         for var in x.temporaries:
-            args.append(f"*{var.name}")
+            args.append(f"{convert_LL_type2(var)} *{var.name} /*{var.shape}*/")
         assert len(args) > 0
-        self.inf_body_decl1 = ", ".join(args)
+        self.inf_body_decl1 = "    " + ";\n    ".join(args)
 
         args = []
         for var in x.temporaries:
@@ -85,13 +90,13 @@ class LLToCPUVisitor:
 
         args = []
         for var in x.temporaries:
-            args.append(f"f32 **{var.name} /*{var.shape}*/")
+            args.append(f"{convert_LL_type2(var)} **{var.name} /*{var.shape}*/")
         self.inf_alloc_temp_args = "        " + ",\n        ".join(args)
 
         args = []
         for var in x.temporaries:
             dims = "*".join([str(s) for s in var.shape])
-            args.append(f"*{var.name} = malloc({dims}*sizeof(f32));")
+            args.append(f"*{var.name} = malloc({dims}*sizeof({convert_LL_type2(var)}));")
         self.inf_alloc_temp_body = "    " + "\n    ".join(args)
 
         self.cpu_c = f"""\
@@ -117,7 +122,7 @@ void allocate_temporaries(
 void inference(
 {self.inf_args}
 ) {{
-    f32 {self.inf_body_decl1};
+{self.inf_body_decl1};
     allocate_temporaries({self.inf_body_args1});
     inference_calculation({self.inf_body_args2});
 }}
@@ -158,6 +163,14 @@ void inference_calculation(
     );
 """
 
+    def visit_relu_32K_f16(self, x):
+        self.inf_body += f"""\
+    relu_32K_f16(
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
     def visit_max_pool_2d(self, x):
         self.inf_body += f"""\
     max_pool_2d({x.in_channels}, {x.H}, {x.W},
@@ -169,6 +182,40 @@ void inference_calculation(
     def visit_reshape(self, x):
         self.inf_body += f"""\
     // NOOP: Reshape({x.x_inout}, {x.shape})
+"""
+
+    def visit_pad_32K_copy(self, x):
+        self.inf_body += f"""\
+    pad_32K_copy(
+        {x.old_size},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_section_32K_copy(self, x):
+        self.inf_body += f"""\
+    section_32K_copy(
+        {x.new_size},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_cast_32K_f32_f16(self, x):
+        self.inf_body += f"""\
+    cast_32K_f32_f16(
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_cast_32K_f16_f32(self, x):
+        self.inf_body += f"""\
+    cast_32K_f16_f32(
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
 """
 
     def visit_saxpy(self, x):

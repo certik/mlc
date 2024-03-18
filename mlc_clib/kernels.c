@@ -244,3 +244,55 @@ void saxpy(int m, int n,
         out[i] += y[i];
     }
 }
+
+void relu_32K_f16(
+        const f16 *x, // (32768)
+        f16 *out // (32768)
+        ) {
+    for (int i = 0; i < 32768; i++) {
+        f16 val = x[i];
+        if (val > 0) {
+            out[i] = val;
+        } else {
+            out[i] = 0;
+        }
+    }
+}
+
+void pad_32K_copy(
+        int old_size,
+        const f32 *x, // (old_size)
+        f32 *out // (32768)
+        ) {
+    for (int i = 0; i < old_size; i++) {
+        out[i] = x[i];
+    }
+}
+
+void section_32K_copy(
+        int new_size,
+        const f32 *x, // (32768)
+        f32 *out // (new_size)
+        ) {
+    for (int i = 0; i < new_size; i++) {
+        out[i] = x[i];
+    }
+}
+
+void cast_32K_f32_f16(
+        const f32 *x, // (32768)
+        f16 *out // (32768)
+        ) {
+    for (int i = 0; i < 32768; i++) {
+        out[i] = x[i];
+    }
+}
+
+void cast_32K_f16_f32(
+        const f16 *x, // (32768)
+        f32 *out // (32768)
+        ) {
+    for (int i = 0; i < 32768; i++) {
+        out[i] = x[i];
+    }
+}
