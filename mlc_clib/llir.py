@@ -90,6 +90,16 @@ class saxpy(Instruction):
     x_in: str # input vector x_in(n)
     x_out: str # output vector x_out(m)
 
+# x_out(m) = A(m, n) x x_in(n) + y(m)
+@dataclass
+class saxpy_f16(Instruction):
+    m: int
+    n: int
+    A: str # matrix A(m, n)
+    y: str # vector y(n)
+    x_in: str # input vector x_in(n)
+    x_out: str # output vector x_out(m)
+
 @dataclass
 class softmax(Instruction):
     n: int

@@ -245,6 +245,21 @@ void saxpy(int m, int n,
     }
 }
 
+void saxpy_f16(int m, int n,
+           const f32 *A,  // (m, n)
+           const f16 *x,  // (n,)
+           const f32 *y,  // (m,)
+           f16 *out // (m,)
+) {
+    for (int i = 0; i < m; i++) {
+        out[i] = (f16)0;
+        for (int j = 0; j < n; j++) {
+            out[i] += (f16)(A[I2(m, n, i, j)]) * x[j];
+        }
+        out[i] += (f16)(y[i]);
+    }
+}
+
 void relu_32K_f16(
         const f16 *x, // (32768)
         f16 *out // (32768)
