@@ -54,6 +54,8 @@ jobs:
       - uses: mamba-org/setup-micromamba@v1.8.0
         with:
           environment-file: examples/mnist/environment_tf.yml
+          create-args: >-
+            clang=17.0.6
 
       - uses: hendrikmuhs/ccache-action@main
         with:
@@ -89,6 +91,6 @@ jobs:
         run: |
             cd mlc_clib
             python generate.py
-            cmake .
+            CC=clang cmake .
             make
             ./mlc_clib
