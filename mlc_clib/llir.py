@@ -24,6 +24,9 @@ class i32(Type): pass
 class i64(Type): pass
 
 @dataclass
+class f16(Type): pass
+
+@dataclass
 class f32(Type): pass
 
 @dataclass
@@ -60,6 +63,11 @@ class relu(Instruction):
     x_out: str
 
 @dataclass
+class relu_32K_f16(Instruction):
+    x_in: str
+    x_out: str
+
+@dataclass
 class max_pool_2d(Instruction):
     in_channels: int
     H: int
@@ -87,6 +95,30 @@ class softmax(Instruction):
     n: int
     x_in: str
     x_out: str
+
+@dataclass
+class pad_32K_copy(Instruction):
+    old_size: int
+    x_in: str
+    x_out: str
+
+@dataclass
+class section_32K_copy(Instruction):
+    new_size: int
+    x_in: str
+    x_out: str
+
+@dataclass
+class cast_32K_f32_f16(Instruction):
+    x_in: str
+    x_out: str
+
+@dataclass
+class cast_32K_f16_f32(Instruction):
+    x_in: str
+    x_out: str
+
+#############################################################
 
 @dataclass
 class Inference:

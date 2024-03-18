@@ -12,6 +12,7 @@
 
 
 typedef float f32;
+typedef _Float16 f16;
 
 void transpose(int n1, int n2, int n3, int n4, const f32 *A,
             int t1, int t2, int t3, int t4, f32 *B); 
@@ -31,6 +32,10 @@ void relu(int in_channels, int in_h, int in_w,
         const f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (in_channels,in_h,in_w)
         );
+void relu_32K_f16(
+        const f16 *x, // (32768)
+        f16 *out // (32768)
+        );
 f32 max(int n, const f32 *x);
 int argmax(int n, const f32 *x);
 f32 sum(int n, const f32 *x);
@@ -48,6 +53,28 @@ void saxpy(int m, int n,
         const f32 *x,  // (n,)
         const f32 *y,  // (m,)
         f32 *out // (m,)
+        );
+
+void pad_32K_copy(
+        int old_size,
+        const f32 *x, // (old_size)
+        f32 *out // (32768)
+        );
+
+void section_32K_copy(
+        int new_size,
+        const f32 *x, // (32768)
+        f32 *out // (new_size)
+        );
+
+void cast_32K_f32_f16(
+        const f32 *x, // (32768)
+        f16 *out // (32768)
+        );
+
+void cast_32K_f16_f32(
+        const f16 *x, // (32768)
+        f32 *out // (32768)
         );
 
 
