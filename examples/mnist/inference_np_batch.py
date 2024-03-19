@@ -80,34 +80,39 @@ def max_pool_2d(x):
                 r[c,i,j,:] = m[:]
     return r
 
-# (h, w)
+# (h, w, batch)
 def conv2d_kernel(kernel_size, weight, x):
     assert len(weight.shape) == 2
     assert weight.shape[0] == kernel_size
     assert weight.shape[1] == kernel_size
-    assert len(x.shape) == 2
-    in_h, in_w = x.shape
+    assert len(x.shape) == 3
+    in_h, in_w, N = x.shape
     out_w = in_w - (kernel_size-1)
     out_h = in_h - (kernel_size-1)
-    out = np.empty((out_h, out_w), dtype=x.dtype)
+    out = np.empty((out_h, out_w, N), dtype=x.dtype)
+    s = np.empty((N,), dtype=x.dtype)
 
     for h in range(out_h):
         for w in range(out_w):
-            out[h,w] = np.sum(weight*x[h:h+kernel_size,w:w+kernel_size])
+            s[:] = 0
+            for i in range(kernel_size):
+                for j in range(kernel_size):
+                    s[:] += weight[i,j]*x[h+i,w+j,:]
+            out[h,w,:] = s[:]
     return out
 
-# (batch, channel, h, w)
+# (channel, h, w, batch)
 def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
-    in_channels_x, in_h, in_w = x.shape
+    in_channels_x, in_h, in_w, N = x.shape
     assert in_channels == in_channels_x
     out_w = in_w - (kernel_size-1)
     out_h = in_h - (kernel_size-1)
-    out = np.empty((out_channels, out_h, out_w), dtype=x.dtype)
+    out = np.empty((out_channels, out_h, out_w, N), dtype=x.dtype)
     for c in range(out_channels):
-        s = np.zeros((out_h, out_w), dtype=x.dtype)
+        s = np.zeros((out_h, out_w, N), dtype=x.dtype)
         for k in range(in_channels):
-            s += conv2d_kernel(kernel_size, weight[c,k,:,:], x[k,:,:])
-        out[c, :, :] = bias[c] + s
+            s += conv2d_kernel(kernel_size, weight[c,k,:,:], x[k,:,:,:])
+        out[c,:,:,:] = bias[c] + s[:,:,:]
     return out
 
 def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
@@ -117,17 +122,13 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     tmp1 = np.empty((1,28,28,N), dtype=np.float32)
     tmp1[0,:,:,:] = inp[:,:,:]
 
-    tmp2 = np.empty((32,26,26,N), dtype=np.float32)
-    for b in range(N):
-        tmp2[:,:,:,b] = conv2d(1, 32, 3, kernel1, bias1, tmp1[:,:,:,b])
+    tmp2 = conv2d(1, 32, 3, kernel1, bias1, tmp1)
 
     tmp3 = relu(tmp2)
 
     tmp4 = max_pool_2d(tmp3)
 
-    tmp5 = np.empty((64,11,11,N), dtype=np.float32)
-    for b in range(N):
-        tmp5[:,:,:,b] = conv2d(32, 64, 3, kernel2, bias2, tmp4[:,:,:,b])
+    tmp5 = conv2d(32, 64, 3, kernel2, bias2, tmp4)
 
     tmp6 = relu(tmp5)
 
