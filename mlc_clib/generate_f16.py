@@ -1,6 +1,7 @@
 from llir import (Inference, Array, f16, f32, conv2d, relu, max_pool_2d,
         reshape, saxpy, saxpy_f16, softmax, pad_32K_copy, cast_32K_f16_f32,
-        cast_32K_f32_f16, section_32K_copy, relu_32K_f16)
+        cast_32K_f32_f16, section_32K_copy, relu_32K_f16, cast_f32_f16,
+        softmax_f16, cast_f16_f32)
 from ll_to_cpu import ll_to_cpu
 
 ll = Inference(
@@ -38,6 +39,8 @@ ll = Inference(
             Array("tmp7e", f32(), (32768,)),
 
             Array("tmp8", f32(), (10,)),
+            Array("tmp8b", f16(), (10,)),
+            Array("tmp8c", f16(), (10,)),
         ],
         # Verify pass: the array arguments fully determine the parameters
         instructions=[
@@ -64,7 +67,9 @@ ll = Inference(
             cast_32K_f16_f32("tmp7d", "tmp7e"),
             section_32K_copy(10, "tmp7e", "tmp8"),
 
-            softmax(10, "tmp8", "out"),
+            cast_f32_f16(10, "tmp8", "tmp8b"),
+            softmax_f16(10, "tmp8b", "tmp8c"),
+            cast_f16_f32(10, "tmp8c", "out"),
         ]
     )
 

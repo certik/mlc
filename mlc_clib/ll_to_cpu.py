@@ -41,10 +41,10 @@ class LLToCPUVisitor:
         supported_nodes = ["Inference", "conv2d",
                            "relu", "max_pool_2d",
                            "reshape", "saxpy", "saxpy_f16",
-                           "softmax",
+                           "softmax", "softmax_f16",
                            "pad_32K_copy", "section_32K_copy",
                            "cast_32K_f32_f16", "cast_32K_f16_f32",
-                           "relu_32K_f16",
+                           "relu_32K_f16", "cast_f32_f16", "cast_f16_f32",
                            ]
         node_name = type(x).__name__
         if node_name in supported_nodes:
@@ -202,9 +202,27 @@ void inference_calculation(
     );
 """
 
+    def visit_cast_f32_f16(self, x):
+        self.inf_body += f"""\
+    cast_f32_f16(
+        {x.n},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
     def visit_cast_32K_f32_f16(self, x):
         self.inf_body += f"""\
     cast_32K_f32_f16(
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_cast_f16_f32(self, x):
+        self.inf_body += f"""\
+    cast_f16_f32(
+        {x.n},
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
         {x.x_out} // {self.tmpinout[x.x_out].shape}
     );
@@ -241,6 +259,14 @@ void inference_calculation(
     def visit_softmax(self, x):
         self.inf_body += f"""\
     softmax({x.n},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_softmax_f16(self, x):
+        self.inf_body += f"""\
+    softmax_f16({x.n},
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
         {x.x_out} // {self.tmpinout[x.x_out].shape}
     );
