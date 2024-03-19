@@ -28,6 +28,12 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
         f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (out_channels,out_h,out_w)
         );
+void conv2d_no_bias(int in_channels, int out_channels, int kernel_size,
+        int in_h, int in_w,
+        f32 *weight, // (out_channels,in_channels,3,3)
+        f32 *x, // (in_channels,in_h,in_w)
+        f32 *out // (out_channels,out_h,out_w)
+        );
 void conv2d_f16(int in_channels, int out_channels, int kernel_size,
             int in_h, int in_w,
             f32 *weight, // (out_channels,in_channels,3,3)
@@ -67,11 +73,20 @@ void max_pool_2d_f16(int in_channels, int in_h, int in_w,
                  const f16 *x, // (in_channels, in_h, in_w)
                  f16 *out // (in_channels, in_h/2, in_w/2)
         );
+void batch_norm_2d(int in_channels, int in_h, int in_w,
+        const f32 *x,
+        f32 *out
+        );
 // out = matmul(A, x) + y
 void saxpy(int m, int n,
         const f32 *A,  // (m, n)
         const f32 *x,  // (n,)
         const f32 *y,  // (m,)
+        f32 *out // (m,)
+        );
+void saxpy_no_bias(int m, int n,
+        const f32 *A,  // (m, n)
+        const f32 *x,  // (n,)
         f32 *out // (m,)
         );
 void saxpy_f16(int m, int n,
