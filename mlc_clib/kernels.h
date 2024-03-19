@@ -30,8 +30,8 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
         );
 void conv2d_f16(int in_channels, int out_channels, int kernel_size,
             int in_h, int in_w,
-            f16 *weight, // (out_channels,in_channels,3,3)
-            const f16 *bias, // (out_channels,)
+            f32 *weight, // (out_channels,in_channels,3,3)
+            const f32 *bias, // (out_channels,)
             f16 *x, // (in_channels,in_h,in_w)
             f16 *out // (out_channels,out_h,out_w)
 );

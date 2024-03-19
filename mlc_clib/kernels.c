@@ -77,7 +77,7 @@ void conv2d_kernel(int kernel_size, int in_h, int in_w,
 }
 
 void conv2d_kernel_f16(int kernel_size, int in_h, int in_w,
-                   const f16 *weight, // (3,3)
+                   const f32 *weight, // (3,3)
                    const f16 *x, // (in_h,in_w)
                    f16 *out // (out_w,out_h)
 ) {
@@ -88,7 +88,7 @@ void conv2d_kernel_f16(int kernel_size, int in_h, int in_w,
             for (int i = 0; i < kernel_size; i++) {
                 for (int j = 0; j < kernel_size; j++) {
                     out[I2(out_h, out_w, h, w)]
-                        += weight[I2(3, 3, i, j)]
+                        += (f32)(weight[I2(3, 3, i, j)])
                         * x[I2(in_h, in_w, h + i, w + j)];
                 }
             }
@@ -145,8 +145,8 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
 
 void conv2d_f16(int in_channels, int out_channels, int kernel_size,
             int in_h, int in_w,
-            f16 *weight, // (out_channels,in_channels,3,3)
-            const f16 *bias, // (out_channels,)
+            f32 *weight, // (out_channels,in_channels,3,3)
+            const f32 *bias, // (out_channels,)
             f16 *x, // (in_channels,in_h,in_w)
             f16 *out // (out_channels,out_h,out_w)
 ) {
@@ -168,7 +168,7 @@ void conv2d_f16(int in_channels, int out_channels, int kernel_size,
         for (int i = 0; i < out_h; i++) {
             for (int j = 0; j < out_w; j++) {
                 out[I3(out_channels, out_h, out_w, c, i, j)]
-                    = bias[c] + s[I2(out_h, out_w, i, j)];
+                    = (f16)(bias[c]) + s[I2(out_h, out_w, i, j)];
             }
         }
     }
