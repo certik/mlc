@@ -107,9 +107,7 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     for b in range(N):
         tmp2[:,:,:,b] = conv2d(1, 32, 3, kernel1, bias1, tmp1[:,:,:,b])
 
-    tmp3 = np.empty((32,26,26,N), dtype=np.float32)
-    for b in range(N):
-        tmp3[:,:,:,b] = relu(tmp2[:,:,:,b])
+    tmp3 = relu(tmp2)
 
     tmp4 = np.empty((32,13,13,N), dtype=np.float32)
     for b in range(N):
@@ -119,9 +117,7 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     for b in range(N):
         tmp5[:,:,:,b] = conv2d(32, 64, 3, kernel2, bias2, tmp4[:,:,:,b])
 
-    tmp6 = np.empty((64,11,11,N), dtype=np.float32)
-    for b in range(N):
-        tmp6[:,:,:,b] = relu(tmp5[:,:,:,b])
+    tmp6 = relu(tmp5)
 
     tmp7 = np.empty((64,5,5,N), dtype=np.float32)
     for b in range(N):
