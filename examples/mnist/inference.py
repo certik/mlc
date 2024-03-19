@@ -1,7 +1,6 @@
 # Test TensorFlow, PyTorch and NumPy inference
 
 print("Importing Python packages...")
-import random
 import numpy as np
 from tensorflow import keras
 from gguf.gguf_reader import GGUFReader
@@ -14,14 +13,12 @@ N_test = 10000
 
 
 def load_test_data():
-    _, (x, y) = keras.datasets.mnist.load_data()
-    x = x.astype("float32") / 255
-    # Shapes:
-    # x (10000, 28, 28)
-    # y (10000,)
-    # Write out data so C can ingest it.
-    # inspect = x.tofile("../../mlc_clib/data/digit_imgs.dat")
-    # inspect = y.tofile("../../mlc_clib/data/digit_refs.dat")
+    g = GGUFReader("mnist-tests.gguf")
+    x = gguf_to_array(g.tensors[0], "x_test")
+    y = gguf_to_array(g.tensors[1], "y_test")
+    x = x.astype(np.uint8).astype(np.float32) / 255
+    assert x.shape == (10000, 28, 28)
+    assert y.shape == (10000,)
     return x, y
 
 def draw_digit(A):
@@ -220,7 +217,6 @@ def main():
     print("    Done.")
 
     for iter in range(N_iter):
-        i = random.randint(0, N_test)
         i = 4212
         print("Input digit index:", i)
         inp = x_test[i,:,:]
