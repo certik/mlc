@@ -76,6 +76,26 @@ void conv2d_kernel(int kernel_size, int in_h, int in_w,
     }
 }
 
+void conv2d_kernel_f16(int kernel_size, int in_h, int in_w,
+                   const f16 *weight, // (3,3)
+                   const f16 *x, // (in_h,in_w)
+                   f16 *out // (out_w,out_h)
+) {
+    int out_w = in_w - (kernel_size - 1);
+    int out_h = in_h - (kernel_size - 1);
+    for (int h = 0; h < out_h; h++) {
+        for (int w = 0; w < out_w; w++) {
+            for (int i = 0; i < kernel_size; i++) {
+                for (int j = 0; j < kernel_size; j++) {
+                    out[I2(out_h, out_w, h, w)]
+                        += weight[I2(3, 3, i, j)]
+                        * x[I2(in_h, in_w, h + i, w + j)];
+                }
+            }
+        }
+    }
+}
+
 
 // (batch, channel, h, w)
 /*
@@ -110,6 +130,37 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
         }
         for (int k = 0; k < in_channels; k++) {
             conv2d_kernel(kernel_size, in_h, in_w,
+                          &weight[I4(out_channels, in_channels, 3, 3, c, k, 0, 0)],
+                          &x[I3(in_channels, in_h, in_w, k, 0, 0)],
+                          s);
+        }
+        for (int i = 0; i < out_h; i++) {
+            for (int j = 0; j < out_w; j++) {
+                out[I3(out_channels, out_h, out_w, c, i, j)]
+                    = bias[c] + s[I2(out_h, out_w, i, j)];
+            }
+        }
+    }
+}
+
+void conv2d_f16(int in_channels, int out_channels, int kernel_size,
+            int in_h, int in_w,
+            f16 *weight, // (out_channels,in_channels,3,3)
+            const f16 *bias, // (out_channels,)
+            f16 *x, // (in_channels,in_h,in_w)
+            f16 *out // (out_channels,out_h,out_w)
+) {
+    int out_w = in_w - (kernel_size - 1);
+    int out_h = in_h - (kernel_size - 1);
+    f16 s[out_h * out_w];
+    for (int c = 0; c < out_channels; c++) {
+        for (int i = 0; i < out_h; i++) {
+            for (int j = 0; j < out_w; j++) {
+                s[I2(out_h, out_w, i, j)] = 0;
+            }
+        }
+        for (int k = 0; k < in_channels; k++) {
+            conv2d_kernel_f16(kernel_size, in_h, in_w,
                           &weight[I4(out_channels, in_channels, 3, 3, c, k, 0, 0)],
                           &x[I3(in_channels, in_h, in_w, k, 0, 0)],
                           s);
@@ -159,6 +210,14 @@ f32 max(int n, const f32 *x) {
     return maxval;
 }
 
+f16 max_f16(int n, const f16 *x) {
+    f16 maxval = -1e10f;
+    for (int i = 0; i < n; i++) {
+        if (x[i] > maxval) maxval = x[i];
+    }
+    return maxval;
+}
+
 /*
  * Find index of largest value.
  */
@@ -182,6 +241,14 @@ f32 sum(int n, const f32 *x) {
     return sumval;
 }
 
+f16 sum_f16(int n, const f16 *x) {
+    f16 sumval = 0;
+    for (int i = 0; i < n; i++) {
+        sumval += x[i];
+    }
+    return sumval;
+}
+
 /*
  * https://paperswithcode.com/method/softmax
  */
@@ -194,6 +261,20 @@ void softmax(int n,
         out[i] = (f32)exp(x[i] - maxval);
     }
     f32 sumval = sum(n, out);
+    for (int i = 0; i < n; i++) {
+        out[i] = out[i] / sumval;
+    }
+}
+
+void softmax_f16(int n,
+             f16 *x,  // (n,)
+             f16 *out // (n,)
+) {
+    f16 maxval = max_f16(n, x);
+    for (int i = 0; i < n; i++) {
+        out[i] = (f16)exp(x[i] - maxval);
+    }
+    f16 sumval = sum_f16(n, out);
     for (int i = 0; i < n; i++) {
         out[i] = out[i] / sumval;
     }
@@ -218,6 +299,30 @@ void max_pool_2d(int in_channels, int in_h, int in_w,
                 for (int i2 = 0; i2 < 2; i2++) {
                     for (int j2 = 0; j2 < 2; j2++) {
                         f32 val = x[I3(in_channels, in_h, in_w, c, 2 * i + i2, 2 * j + j2)];
+                        if (val > max) {
+                            max = val;
+                        }
+                    }
+                }
+                out[I3(in_channels, out_h, out_w, c, i, j)] = max;
+            }
+        }
+    }
+}
+
+void max_pool_2d_f16(int in_channels, int in_h, int in_w,
+                 const f16 *x, // (in_channels, in_h, in_w)
+                 f16 *out // (in_channels, in_h/2, in_w/2)
+) {
+    int out_w = in_w / 2;
+    int out_h = in_h / 2;
+    for (int c = 0; c < in_channels; c++) {
+        for (int i = 0; i < out_h; i++) {
+            for (int j = 0; j < out_w; j++) {
+                f16 max = -1e10f;
+                for (int i2 = 0; i2 < 2; i2++) {
+                    for (int j2 = 0; j2 < 2; j2++) {
+                        f16 val = x[I3(in_channels, in_h, in_w, c, 2 * i + i2, 2 * j + j2)];
                         if (val > max) {
                             max = val;
                         }
@@ -260,6 +365,21 @@ void saxpy_f16(int m, int n,
     }
 }
 
+void relu_f16(
+        int n,
+        const f16 *x, // (n)
+        f16 *out // (n)
+        ) {
+    for (int i = 0; i < n; i++) {
+        f16 val = x[i];
+        if (val > 0) {
+            out[i] = val;
+        } else {
+            out[i] = 0;
+        }
+    }
+}
+
 void relu_32K_f16(
         const f16 *x, // (32768)
         f16 *out // (32768)
@@ -294,11 +414,31 @@ void section_32K_copy(
     }
 }
 
+void cast_f32_f16(
+        int n,
+        const f32 *x, // (n)
+        f16 *out // (n)
+        ) {
+    for (int i = 0; i < n; i++) {
+        out[i] = x[i];
+    }
+}
+
 void cast_32K_f32_f16(
         const f32 *x, // (32768)
         f16 *out // (32768)
         ) {
     for (int i = 0; i < 32768; i++) {
+        out[i] = x[i];
+    }
+}
+
+void cast_f16_f32(
+        int n,
+        const f16 *x, // (n)
+        f32 *out // (n)
+        ) {
+    for (int i = 0; i < n; i++) {
         out[i] = x[i];
     }
 }

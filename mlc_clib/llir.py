@@ -107,6 +107,12 @@ class softmax(Instruction):
     x_out: str
 
 @dataclass
+class softmax_f16(Instruction):
+    n: int
+    x_in: str
+    x_out: str
+
+@dataclass
 class pad_32K_copy(Instruction):
     old_size: int
     x_in: str
@@ -119,7 +125,19 @@ class section_32K_copy(Instruction):
     x_out: str
 
 @dataclass
+class cast_f32_f16(Instruction):
+    n: str
+    x_in: str
+    x_out: str
+
+@dataclass
 class cast_32K_f32_f16(Instruction):
+    x_in: str
+    x_out: str
+
+@dataclass
+class cast_f16_f32(Instruction):
+    n: str
     x_in: str
     x_out: str
 

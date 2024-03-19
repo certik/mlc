@@ -15,7 +15,7 @@ typedef float f32;
 typedef _Float16 f16;
 
 void transpose(int n1, int n2, int n3, int n4, const f32 *A,
-            int t1, int t2, int t3, int t4, f32 *B); 
+            int t1, int t2, int t3, int t4, f32 *B);
 void conv2d_kernel(int kernel_size, int in_h, int in_w,
         const f32 *weight, // (3,3)
         const f32 *x, // (in_h,in_w)
@@ -28,9 +28,21 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
         f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (out_channels,out_h,out_w)
         );
+void conv2d_f16(int in_channels, int out_channels, int kernel_size,
+            int in_h, int in_w,
+            f16 *weight, // (out_channels,in_channels,3,3)
+            const f16 *bias, // (out_channels,)
+            f16 *x, // (in_channels,in_h,in_w)
+            f16 *out // (out_channels,out_h,out_w)
+);
 void relu(int in_channels, int in_h, int in_w,
         const f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (in_channels,in_h,in_w)
+        );
+void relu_f16(
+        int n,
+        const f16 *x, // (n)
+        f16 *out // (n)
         );
 void relu_32K_f16(
         const f16 *x, // (32768)
@@ -43,9 +55,17 @@ void softmax(int n,
         f32 *x,  // (n,)
         f32 *out // (n,)
         );
+void softmax_f16(int n,
+             f16 *x,  // (n,)
+             f16 *out // (n,)
+);
 void max_pool_2d(int in_channels, int in_h, int in_w,
         const f32 *x, // (in_channels,in_h,in_w)
         f32 *out // (in_channels,in_h/2,in_w/2)
+        );
+void max_pool_2d_f16(int in_channels, int in_h, int in_w,
+                 const f16 *x, // (in_channels, in_h, in_w)
+                 f16 *out // (in_channels, in_h/2, in_w/2)
         );
 // out = matmul(A, x) + y
 void saxpy(int m, int n,
@@ -73,9 +93,21 @@ void section_32K_copy(
         f32 *out // (new_size)
         );
 
+void cast_f32_f16(
+        int n,
+        const f32 *x, // (n)
+        f16 *out // (n)
+        );
+
 void cast_32K_f32_f16(
         const f32 *x, // (32768)
         f16 *out // (32768)
+        );
+
+void cast_f16_f32(
+        int n,
+        const f16 *x, // (n)
+        f32 *out // (n)
         );
 
 void cast_32K_f16_f32(
