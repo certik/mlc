@@ -147,6 +147,7 @@ jobs:
         run: |
             cd examples/mnist
             python inference_np.py
+            python inference_np_batch.py
 
       - name: Run C inference Test 1
         shell: bash -e -x -l {0}
