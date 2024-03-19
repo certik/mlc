@@ -39,7 +39,7 @@ class LLToCPUVisitor:
 
     def visit(self, x):
         supported_nodes = ["Inference", "conv2d",
-                           "relu", "max_pool_2d",
+                           "relu", "max_pool_2d", "max_pool_2d_f16",
                            "reshape", "saxpy", "saxpy_f16",
                            "softmax", "softmax_f16",
                            "pad_32K_copy", "section_32K_copy",
@@ -174,6 +174,14 @@ void inference_calculation(
     def visit_max_pool_2d(self, x):
         self.inf_body += f"""\
     max_pool_2d({x.in_channels}, {x.H}, {x.W},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_max_pool_2d_f16(self, x):
+        self.inf_body += f"""\
+    max_pool_2d_f16({x.in_channels}, {x.H}, {x.W},
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
         {x.x_out} // {self.tmpinout[x.x_out].shape}
     );
