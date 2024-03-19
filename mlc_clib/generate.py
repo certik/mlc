@@ -1,6 +1,6 @@
 from llir import (Inference, Array, f16, f32, conv2d, relu, max_pool_2d,
         reshape, saxpy, softmax, pad_32K_copy, cast_32K_f16_f32,
-        cast_32K_f32_f16, section_32K_copy, relu_32K_f16)
+        cast_32K_f32_f16, section_32K_copy, relu_32K_f16, batch_norm_2d)
 from ll_to_cpu import ll_to_cpu
 
 ll = Inference(
@@ -11,39 +11,46 @@ ll = Inference(
             Array("out", f32(), (10,)),
         ],
         weights=[
-            Array("kernel1", f32(), (32, 1, 3, 3)),
-            Array("bias1", f32(), (32,)),
-            Array("kernel2", f32(), (64, 32, 3, 3)),
-            Array("bias2", f32(), (64,)),
-            Array("dense_w", f32(), (10, 1600)),
-            Array("dense_b", f32(), (10,)),
+            Array("kernel1", f32(), (32, 1, 5, 5)),
+            Array("kernel2", f32(), (32, 32, 5, 5)),
+            Array("kernel3", f32(), (64, 32, 3, 3)),
+            Array("kernel4", f32(), (64, 64, 3, 3)),
+            Array("dense_w", f32(), (10, 576)),
         ],
         temporaries=[
-            Array("tmp2", f32(), (32, 26, 26)),
-            Array("tmp3", f32(), (32, 26, 26)),
-            Array("tmp4", f32(), (32, 13, 13)),
+            Array("tmp1", f32(), (32, 24, 24)),
+            Array("tmp2", f32(), (32, 24, 24)),
+            Array("tmp3", f32(), (32, 20, 20)),
+            Array("tmp4", f32(), (32, 20, 20)),
+            Array("tmp5", f32(), (32, 20, 20)),
+            Array("tmp6", f32(), (32, 10, 10)),
 
-            Array("tmp5", f32(), (64, 11, 11)),
-            Array("tmp5b", f32(), (32768,)),
-            Array("tmp5c", f16(), (32768,)),
-            Array("tmp5d", f16(), (32768,)),
-            Array("tmp5e", f32(), (32768,)),
+            Array("tmp7", f32(), (64, 8, 8)),
+            Array("tmp8", f32(), (64, 8, 8)),
+            Array("tmp9", f32(), (64, 6, 6)),
+            Array("tmp10", f32(), (64, 6, 6)),
+            Array("tmp11", f32(), (64, 6, 6)),
+            Array("tmp12", f32(), (64, 3, 3)),
 
-            Array("tmp6", f32(), (64, 11, 11)),
-            Array("tmp7", f32(), (64, 5, 5)),
-            Array("tmp8", f32(), (10,)),
+            Array("tmp13", f32(), (10,)),
         ],
-        # Verify pass: the array arguments fully determine the parameters
         instructions=[
-            conv2d(1, 32, 3, 28, 28, "kernel1", "bias1", "in", "tmp2"),
-            relu(32, 26, 26, "tmp2", "tmp3"),
-            max_pool_2d(32, 26, 26, "tmp3", "tmp4"),
-            conv2d(32, 64, 3, 13, 13, "kernel2", "bias2", "tmp4", "tmp5"),
-            relu(64, 11, 11, "tmp5", "tmp6"),
-            max_pool_2d(64, 11, 11, "tmp6", "tmp7"),
-            reshape((1600,), "tmp7"),
-            saxpy(10, 1600, "dense_w", "dense_b", "tmp7", "tmp8"),
-            softmax(10, "tmp8", "out"),
+            conv2d(1, 32, 5, 28, 28, "kernel1", None, "in", "tmp1"), # (32, 24, 24)
+            relu(32, 24, 24, "tmp1", "tmp2"), # (32, 24, 24)
+            conv2d(32, 32, 5, 24, 24, "kernel2", None, "tmp2", "tmp3"), # (32, 20, 20)
+            relu(32, 20, 20, "tmp3", "tmp4"), # (32, 20, 20)
+            batch_norm_2d(32, 20, 20, "tmp4", "tmp5"), # (32, 20, 20)
+            max_pool_2d(32, 20, 20, "tmp5", "tmp6"), # (32, 10, 10)
+
+            conv2d(32, 64, 3, 10, 10, "kernel3", None, "tmp6", "tmp7"), # (64, 8, 8)
+            relu(64, 8, 8, "tmp7", "tmp8"), # (64, 8, 8)
+            conv2d(64, 64, 3, 8, 8, "kernel4", None, "tmp8", "tmp9"), # (64, 6, 6)
+            relu(64, 6, 6, "tmp9", "tmp10"), # (64, 6, 6)
+            batch_norm_2d(64, 6, 6, "tmp10", "tmp11"), # (64, 6, 6)
+            max_pool_2d(64, 6, 6, "tmp11", "tmp12"), # (64, 3, 3)
+
+            saxpy(10, 576, "dense_w", None, "tmp12", "tmp13"), # (10)
+            softmax(10, "tmp13", "out"), # (10)
         ]
     )
 

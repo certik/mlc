@@ -102,6 +102,14 @@ class max_pool_2d_f16(Instruction):
     x_out: str
 
 @dataclass
+class batch_norm_2d(Instruction):
+    in_channels: int
+    H: int
+    W: int
+    x_in: str
+    x_out: str
+
+@dataclass
 class reshape(Instruction):
     shape: list[int]
     x_inout: str
