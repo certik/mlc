@@ -63,6 +63,12 @@ class relu(Instruction):
     x_out: str
 
 @dataclass
+class relu_f16(Instruction):
+    n: int
+    x_in: str
+    x_out: str
+
+@dataclass
 class relu_32K_f16(Instruction):
     x_in: str
     x_out: str
