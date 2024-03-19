@@ -123,9 +123,7 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     for b in range(N):
         tmp7[:,:,:,b] = max_pool_2d(tmp6[:,:,:,b])
 
-    tmp8 = np.empty((1600,N), dtype=np.float32)
-    for b in range(N):
-        tmp8[:,b] = np.reshape(tmp7[:,:,:,b], (1600,))
+    tmp8 = np.reshape(tmp7, (1600,N))
 
     tmp9 = np.empty((10,N), dtype=np.float32)
     for b in range(N):
