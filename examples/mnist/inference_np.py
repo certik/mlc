@@ -1,10 +1,8 @@
-# Test TensorFlow, PyTorch and NumPy inference
+# Test NumPy inference from GGUF, no PyTorch or TensorFlow dependency.
 
 print("Importing Python packages...")
 import numpy as np
-from tensorflow import keras
 from gguf.gguf_reader import GGUFReader
-import torch
 print("    Done.")
 
 
@@ -50,60 +48,6 @@ def gguf_to_array(g, expected_name):
     # The GGUF format stores the shape in reversed order
     return np.reshape(g.data, np.flip(g.shape))
 
-def run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
-    class Model(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.model = torch.nn.Sequential (
-                torch.nn.Conv2d(1, 32, 3, bias=True),
-                torch.nn.ReLU(),
-                torch.nn.MaxPool2d((2, 2)),
-                torch.nn.Conv2d(32, 64, 3, bias=True),
-                torch.nn.ReLU(),
-                torch.nn.MaxPool2d((2, 2)),
-                torch.nn.Flatten(0, -1),
-                torch.nn.Linear(1600, 10, bias=True),
-                torch.nn.Softmax(dim=0),
-                )
-
-            self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel1.copy()))
-            self.model[0].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias1.copy()))
-            self.model[3].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel2.copy()))
-            self.model[3].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias2.copy()))
-            self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
-                    dense_w.copy()))
-            self.model[7].bias = torch.nn.Parameter(torch.from_numpy(
-                    dense_b.copy()))
-
-        def forward(self, x):
-            return self.model(x)
-
-    print("Input shape:", inp.shape)
-    assert inp.shape == (28, 28)
-    model = Model()
-    inp_ = np.expand_dims(inp, 0)
-    torch_inp = torch.tensor(inp_)
-    torch_out = model(torch_inp)
-    out = torch_out.detach().numpy()
-    print("Output shape:", out.shape)
-    assert out.shape == (10,)
-    print("PT:", out)
-    print("PT max:", out.argmax())
-
-    return out
-
-def run_model_tf(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
-    tf_model = keras.models.load_model("mnist-cnn-model")
-    print("Input shape:", inp.shape)
-    assert inp.shape == (28, 28)
-    out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
-    print("TF:", out_tf)
-    print("TF max:", out_tf.numpy().argmax())
-    return out_tf
 
 # (10,) -> (10,)
 def softmax(x):
@@ -158,7 +102,6 @@ def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
     return out
 
 def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
-    print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     inp_ = np.expand_dims(inp, 0)
     out = inp_.copy()
@@ -193,11 +136,7 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     # Softmax
     out = softmax(out)
 
-    print("Output shape:", out.shape)
     assert out.shape == (10,)
-    print("NumPy:", out)
-    print("NumPy max:", out.argmax())
-
     return out
 
 
@@ -223,17 +162,6 @@ def main():
         draw_digit(inp)
         print("Reference value:", y_test[i])
 
-        x = run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
-        infer_val = np.argmax(x)
-        print("Inferred value:", infer_val)
-        print("Digit probabilities:", x)
-
-        x = run_model_tf(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
-        infer_val = np.argmax(x)
-        print("Inferred value:", infer_val)
-        print("Digit probabilities:", x)
-
-        print("---------")
         x = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
         infer_val = np.argmax(x)
         print("NumPy Inferred value:", infer_val)
