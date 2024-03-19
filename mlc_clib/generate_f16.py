@@ -20,8 +20,8 @@ ll = Inference(
             Array("dense_b", f32(), (10,)),
         ],
         temporaries=[
-            Array("tmp2", f32(), (32, 26, 26)),
-            Array("tmp2b", f16(), (32, 26, 26)),
+            Array("tmp1", f16(), (28, 28)),
+            Array("tmp2", f16(), (32, 26, 26)),
             Array("tmp3", f16(), (32, 26, 26)),
             Array("tmp4", f16(), (32, 13, 13)),
             Array("tmp5", f16(), (64, 11, 11)),
@@ -32,9 +32,10 @@ ll = Inference(
         ],
         # Verify pass: the array arguments fully determine the parameters
         instructions=[
-            conv2d(1, 32, 3, 28, 28, "kernel1", "bias1", "in", "tmp2"),
-            cast_f32_f16(32*26*26, "tmp2", "tmp2b"),
-            relu_f16(32*26*26, "tmp2b", "tmp3"),
+            cast_f32_f16(28*28, "in", "tmp1"),
+
+            conv2d_f16(1, 32, 3, 28, 28, "kernel1", "bias1", "tmp1", "tmp2"),
+            relu_f16(32*26*26, "tmp2", "tmp3"),
             max_pool_2d_f16(32, 26, 26, "tmp3", "tmp4"),
             conv2d_f16(32, 64, 3, 13, 13, "kernel2", "bias2", "tmp4", "tmp5"),
             relu_f16(64*11*11, "tmp5", "tmp6"),
