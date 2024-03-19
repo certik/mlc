@@ -46,8 +46,14 @@ def gguf_to_array(g, expected_name):
 
 # (10,) -> (10,)
 def softmax(x):
-    exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
-    return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
+    out = np.empty(x.shape, dtype=x.dtype)
+    m = np.max(x, axis=0)
+    for i in range(np.size(x,0)):
+        out[i,:] = np.exp(x[i,:] - m[:])
+    s = np.sum(out, axis=0)
+    for i in range(np.size(x,0)):
+        out[i,:] = out[i,:] / s[:]
+    return out
 
 def relu(x):
     y = x.copy()
@@ -129,8 +135,7 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     for b in range(N):
         tmp9[:,b] += dense_b
 
-    for b in range(N):
-        out2[:,b] = softmax(tmp9[:,b])
+    out2 = softmax(tmp9)
 
     return out2
 
