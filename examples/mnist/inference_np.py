@@ -102,7 +102,6 @@ def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
     return out
 
 def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
-    print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     inp_ = np.expand_dims(inp, 0)
     out = inp_.copy()
@@ -137,11 +136,7 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     # Softmax
     out = softmax(out)
 
-    print("Output shape:", out.shape)
     assert out.shape == (10,)
-    print("NumPy:", out)
-    print("NumPy max:", out.argmax())
-
     return out
 
 
