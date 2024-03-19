@@ -44,7 +44,7 @@ def gguf_to_array(g, expected_name):
     return np.reshape(g.data, np.flip(g.shape))
 
 
-# (10,) -> (10,)
+# (10,N) -> (10,N)
 def softmax(x):
     out = np.empty(x.shape, dtype=x.dtype)
     m = np.max(x, axis=0)
@@ -55,21 +55,29 @@ def softmax(x):
         out[i,:] = out[i,:] / s[:]
     return out
 
+# (C,W,H,N)
 def relu(x):
     y = x.copy()
     y[x < 0] = 0
     return y
 
-# (channel, w, h)
+# (channel, w, h, N)
 def max_pool_2d(x):
-    channel, w, h = x.shape
+    channel, w, h, N = x.shape
     w2 = w//2
     h2 = h//2
-    r = np.empty((channel, w2, h2), dtype=x.dtype)
+    r = np.empty((channel, w2, h2, N), dtype=x.dtype)
+    m = np.empty((N,), dtype=x.dtype)
+    val = np.empty((N,), dtype=x.dtype)
     for c in range(channel):
         for i in range(w2):
             for j in range(h2):
-                r[c, i, j] = np.max(x[c, 2*i:2*i+2, 2*j:2*j+2])
+                m[:] = 1e-100
+                for ii in range(2):
+                    for jj in range(2):
+                        val[:] = x[c, 2*i+ii, 2*j+jj, :]
+                        m[val > m] = val[val > m]
+                r[c,i,j,:] = m[:]
     return r
 
 # (h, w)
@@ -115,9 +123,7 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     tmp3 = relu(tmp2)
 
-    tmp4 = np.empty((32,13,13,N), dtype=np.float32)
-    for b in range(N):
-        tmp4[:,:,:,b] = max_pool_2d(tmp3[:,:,:,b])
+    tmp4 = max_pool_2d(tmp3)
 
     tmp5 = np.empty((64,11,11,N), dtype=np.float32)
     for b in range(N):
@@ -125,9 +131,7 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     tmp6 = relu(tmp5)
 
-    tmp7 = np.empty((64,5,5,N), dtype=np.float32)
-    for b in range(N):
-        tmp7[:,:,:,b] = max_pool_2d(tmp6[:,:,:,b])
+    tmp7 = max_pool_2d(tmp6)
 
     tmp8 = np.reshape(tmp7, (1600,N))
 
