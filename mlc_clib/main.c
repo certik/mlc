@@ -85,7 +85,7 @@ int main() {
 
         inference(in, out,
                 kernel1, kernel2, kernel3, kernel4,
-                dense_w);
+                dense_w, out);
 
         printf("Digit probabilities:\n");
         print_A(out);
