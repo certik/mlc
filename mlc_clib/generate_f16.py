@@ -22,8 +22,8 @@ ll = Inference(
         temporaries=[
             Array("tmp2", f32(), (32, 26, 26)),
             Array("tmp3", f32(), (32, 26, 26)),
-            Array("tmp4", f32(), (32, 13, 13)),
-            Array("tmp4b", f16(), (32, 13, 13)),
+            Array("tmp3b", f16(), (32, 26, 26)),
+            Array("tmp4", f16(), (32, 13, 13)),
             Array("tmp5", f16(), (64, 11, 11)),
             Array("tmp6", f16(), (64, 11, 11)),
             Array("tmp7", f16(), (64, 5, 5)),
@@ -34,10 +34,10 @@ ll = Inference(
         instructions=[
             conv2d(1, 32, 3, 28, 28, "kernel1", "bias1", "in", "tmp2"),
             relu(32, 26, 26, "tmp2", "tmp3"),
-            max_pool_2d(32, 26, 26, "tmp3", "tmp4"),
 
-            cast_f32_f16(64*13*13, "tmp4", "tmp4b"),
-            conv2d_f16(32, 64, 3, 13, 13, "kernel2", "bias2", "tmp4b", "tmp5"),
+            cast_f32_f16(32*26*26, "tmp3", "tmp3b"),
+            max_pool_2d_f16(32, 26, 26, "tmp3b", "tmp4"),
+            conv2d_f16(32, 64, 3, 13, 13, "kernel2", "bias2", "tmp4", "tmp5"),
             relu_f16(64*11*11, "tmp5", "tmp6"),
             max_pool_2d_f16(64, 11, 11, "tmp6", "tmp7"),
             saxpy_f16(10, 1600, "dense_w", "dense_b", "tmp7", "tmp7b"),
