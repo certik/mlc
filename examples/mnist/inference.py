@@ -52,7 +52,7 @@ def gguf_to_array(g, expected_name):
     # The GGUF format stores the shape in reversed order
     return np.reshape(g.data, np.flip(g.shape))
 
-def run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+def run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     tf_model = keras.models.load_model("mnist-cnn-model")
     class Model(torch.nn.Module):
         def __init__(self):
@@ -222,7 +222,7 @@ def main():
         draw_digit(inp)
         print("Reference value:", y_test[i])
 
-        x = run_model(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        x = run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
         infer_val = np.argmax(x)
         print("Inferred value:", infer_val)
         print("Digit probabilities:", x)
