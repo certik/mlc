@@ -55,6 +55,18 @@ class conv2d(Instruction):
     x_out: str
 
 @dataclass
+class conv2d_f16(Instruction):
+    in_channels: int
+    out_channels: int
+    kernel_size: int
+    H: int
+    W: int
+    kernel: str
+    bias: str
+    x_in: str
+    x_out: str
+
+@dataclass
 class relu(Instruction):
     in_channels: int
     H: int

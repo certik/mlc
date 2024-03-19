@@ -38,7 +38,7 @@ class LLToCPUVisitor:
         self.instructions = []
 
     def visit(self, x):
-        supported_nodes = ["Inference", "conv2d",
+        supported_nodes = ["Inference", "conv2d", "conv2d_f16",
                            "relu", "relu_f16",
                            "max_pool_2d", "max_pool_2d_f16",
                            "reshape", "saxpy", "saxpy_f16",
@@ -149,6 +149,16 @@ void inference_calculation(
     def visit_conv2d(self, x):
         self.inf_body += f"""\
     conv2d({x.in_channels}, {x.out_channels}, {x.kernel_size}, {x.H}, {x.W},
+        {x.kernel}, // {self.weights[x.kernel].shape}
+        {x.bias}, // {self.weights[x.bias].shape}
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_conv2d_f16(self, x):
+        self.inf_body += f"""\
+    conv2d_f16({x.in_channels}, {x.out_channels}, {x.kernel_size}, {x.H}, {x.W},
         {x.kernel}, // {self.weights[x.kernel].shape}
         {x.bias}, // {self.weights[x.bias].shape}
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
