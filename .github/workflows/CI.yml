@@ -44,7 +44,7 @@ jobs:
             dot -Tpng mnist-cnn.dot -o mnist-cnn.dot.png
 
   mnist_train:
-    name: MNIST Training
+    name: MNIST training
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
