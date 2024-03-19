@@ -1,6 +1,6 @@
 from llir import (Inference, Array, f16, f32, conv2d, relu, max_pool_2d,
         reshape, saxpy, softmax, pad_32K_copy, cast_32K_f16_f32,
-        cast_32K_f32_f16, section_32K_copy, relu_32K_f16)
+        cast_32K_f32_f16, section_32K_copy, relu_32K_f16, batch_norm_2d)
 from ll_to_cpu import ll_to_cpu
 
 ll = Inference(
