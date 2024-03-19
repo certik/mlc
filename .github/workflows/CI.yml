@@ -139,8 +139,8 @@ jobs:
         shell: bash -e -x -l {0}
         run: |
             cd examples/mnist
-            curl -O https://huggingface.co/certik/mnist/resolve/main/mnist-cnn-model.gguf
-            curl -O https://huggingface.co/certik/mnist/resolve/main/mnist-tests.gguf
+            curl -O -L https://huggingface.co/certik/mnist/resolve/main/mnist-cnn-model.gguf
+            curl -O -L https://huggingface.co/certik/mnist/resolve/main/mnist-tests.gguf
 
 #      - name: Run Python inference
 #        shell: bash -e -x -l {0}
