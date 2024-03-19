@@ -143,6 +143,36 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
     }
 }
 
+void conv2d_no_bias(int in_channels, int out_channels, int kernel_size,
+            int in_h, int in_w,
+            f32 *weight, // (out_channels,in_channels,3,3)
+            f32 *x, // (in_channels,in_h,in_w)
+            f32 *out // (out_channels,out_h,out_w)
+) {
+    int out_w = in_w - (kernel_size - 1);
+    int out_h = in_h - (kernel_size - 1);
+    f32 s[out_h * out_w];
+    for (int c = 0; c < out_channels; c++) {
+        for (int i = 0; i < out_h; i++) {
+            for (int j = 0; j < out_w; j++) {
+                s[I2(out_h, out_w, i, j)] = 0;
+            }
+        }
+        for (int k = 0; k < in_channels; k++) {
+            conv2d_kernel(kernel_size, in_h, in_w,
+                          &weight[I4(out_channels, in_channels, 3, 3, c, k, 0, 0)],
+                          &x[I3(in_channels, in_h, in_w, k, 0, 0)],
+                          s);
+        }
+        for (int i = 0; i < out_h; i++) {
+            for (int j = 0; j < out_w; j++) {
+                out[I3(out_channels, out_h, out_w, c, i, j)]
+                    = s[I2(out_h, out_w, i, j)];
+            }
+        }
+    }
+}
+
 void conv2d_f16(int in_channels, int out_channels, int kernel_size,
             int in_h, int in_w,
             f32 *weight, // (out_channels,in_channels,3,3)
@@ -334,6 +364,13 @@ void max_pool_2d_f16(int in_channels, int in_h, int in_w,
     }
 }
 
+void batch_norm_2d(int in_channels, int in_h, int in_w,
+                 const f32 *x, // (in_channels, in_h, in_w)
+                 f32 *out // (in_channels, in_h/2, in_w/2)
+) {
+    // Not implemented yet.
+}
+
 // out = matmul(A, x) + y
 void saxpy(int m, int n,
            const f32 *A,  // (m, n)
@@ -347,6 +384,19 @@ void saxpy(int m, int n,
             out[i] += A[I2(m, n, i, j)] * x[j];
         }
         out[i] += y[i];
+    }
+}
+
+void saxpy_no_bias(int m, int n,
+           const f32 *A,  // (m, n)
+           const f32 *x,  // (n,)
+           f32 *out // (m,)
+) {
+    for (int i = 0; i < m; i++) {
+        out[i] = 0;
+        for (int j = 0; j < n; j++) {
+            out[i] += A[I2(m, n, i, j)] * x[j];
+        }
     }
 }
 

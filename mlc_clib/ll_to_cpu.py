@@ -41,6 +41,7 @@ class LLToCPUVisitor:
         supported_nodes = ["Inference", "conv2d", "conv2d_f16",
                            "relu", "relu_f16",
                            "max_pool_2d", "max_pool_2d_f16",
+                           "batch_norm_2d",
                            "reshape", "saxpy", "saxpy_f16",
                            "softmax", "softmax_f16",
                            "pad_32K_copy", "section_32K_copy",
@@ -147,7 +148,16 @@ void inference_calculation(
 """
 
     def visit_conv2d(self, x):
-        self.inf_body += f"""\
+        if x.bias is None:
+            self.inf_body += f"""\
+    conv2d_no_bias({x.in_channels}, {x.out_channels}, {x.kernel_size}, {x.H}, {x.W},
+        {x.kernel}, // {self.weights[x.kernel].shape}
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+        else:
+            self.inf_body += f"""\
     conv2d({x.in_channels}, {x.out_channels}, {x.kernel_size}, {x.H}, {x.W},
         {x.kernel}, // {self.weights[x.kernel].shape}
         {x.bias}, // {self.weights[x.bias].shape}
@@ -201,6 +211,14 @@ void inference_calculation(
     def visit_max_pool_2d_f16(self, x):
         self.inf_body += f"""\
     max_pool_2d_f16({x.in_channels}, {x.H}, {x.W},
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+
+    def visit_batch_norm_2d(self, x):
+        self.inf_body += f"""\
+    batch_norm_2d({x.in_channels}, {x.H}, {x.W},
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
         {x.x_out} // {self.tmpinout[x.x_out].shape}
     );
@@ -264,7 +282,16 @@ void inference_calculation(
 """
 
     def visit_saxpy(self, x):
-        self.inf_body += f"""\
+        if x.y is None:
+            self.inf_body += f"""\
+    saxpy_no_bias({x.m}, {x.n},
+        {x.A}, // {self.weights[x.A].shape}
+        {x.x_in}, // {self.tmpinout[x.x_in].shape}
+        {x.x_out} // {self.tmpinout[x.x_out].shape}
+    );
+"""
+        else:
+            self.inf_body += f"""\
     saxpy({x.m}, {x.n},
         {x.A}, // {self.weights[x.A].shape}
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
