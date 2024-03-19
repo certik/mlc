@@ -34,9 +34,9 @@ ll = Inference(
 
             Array("tmp7", f32(), (64, 5, 5)),
             Array("tmp7b", f32(), (32768,)),
-            Array("tmp7c", f16(), (32768,)),
-            Array("tmp7d", f16(), (32768,)),
-            Array("tmp7e", f32(), (32768,)),
+            Array("tmp7c", f16(), (1600,)),
+            Array("tmp7d", f16(), (10,)),
+            Array("tmp7e", f32(), (10,)),
 
             Array("tmp8", f32(), (10,)),
             Array("tmp8b", f16(), (10,)),
@@ -61,14 +61,9 @@ ll = Inference(
             max_pool_2d(64, 11, 11, "tmp6", "tmp7"),
             reshape((1600,), "tmp7"),
 
-            pad_32K_copy(1600, "tmp7", "tmp7b"),
-            cast_32K_f32_f16("tmp7b", "tmp7c"),
+            cast_f32_f16(1600, "tmp7", "tmp7c"),
             saxpy_f16(10, 1600, "dense_w", "dense_b", "tmp7c", "tmp7d"),
-            cast_32K_f16_f32("tmp7d", "tmp7e"),
-            section_32K_copy(10, "tmp7e", "tmp8"),
-
-            cast_f32_f16(10, "tmp8", "tmp8b"),
-            softmax_f16(10, "tmp8b", "tmp8c"),
+            softmax_f16(10, "tmp7d", "tmp8c"),
             cast_f16_f32(10, "tmp8c", "out"),
         ]
     )
