@@ -142,11 +142,11 @@ jobs:
             curl -O -L https://huggingface.co/certik/mnist/resolve/main/mnist-cnn-model.gguf
             curl -O -L https://huggingface.co/certik/mnist/resolve/main/mnist-tests.gguf
 
-#      - name: Run Python inference
-#        shell: bash -e -x -l {0}
-#        run: |
-#            cd examples/mnist
-#            python inference.py
+      - name: Run NumPy inference
+        shell: bash -e -x -l {0}
+        run: |
+            cd examples/mnist
+            python inference_np.py
 
       - name: Run C inference Test 1
         shell: bash -e -x -l {0}
