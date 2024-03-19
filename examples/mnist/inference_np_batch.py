@@ -125,9 +125,9 @@ def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     tmp8 = np.reshape(tmp7, (1600,N))
 
-    tmp9 = np.empty((10,N), dtype=np.float32)
+    tmp9 = np.dot(dense_w, tmp8)
     for b in range(N):
-        tmp9[:,b] = np.dot(dense_w, tmp8[:,b]) + dense_b
+        tmp9[:,b] += dense_b
 
     for b in range(N):
         out2[:,b] = softmax(tmp9[:,b])
