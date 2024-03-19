@@ -1,8 +1,9 @@
+# Test TensorFlow, PyTorch and NumPy inference
+
 print("Importing Python packages...")
 import random
 import numpy as np
 from tensorflow import keras
-import tensorflow as tf
 from gguf.gguf_reader import GGUFReader
 import torch
 print("    Done.")
@@ -53,7 +54,6 @@ def gguf_to_array(g, expected_name):
     return np.reshape(g.data, np.flip(g.shape))
 
 def run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
-    tf_model = keras.models.load_model("mnist-cnn-model")
     class Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
@@ -97,11 +97,16 @@ def run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     print("PT:", out)
     print("PT max:", out.argmax())
 
+    return out
+
+def run_model_tf(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+    tf_model = keras.models.load_model("mnist-cnn-model")
+    print("Input shape:", inp.shape)
+    assert inp.shape == (28, 28)
     out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
     print("TF:", out_tf)
     print("TF max:", out_tf.numpy().argmax())
-
-    return out
+    return out_tf
 
 # (10,) -> (10,)
 def softmax(x):
@@ -223,6 +228,11 @@ def main():
         print("Reference value:", y_test[i])
 
         x = run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        infer_val = np.argmax(x)
+        print("Inferred value:", infer_val)
+        print("Digit probabilities:", x)
+
+        x = run_model_tf(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
         infer_val = np.argmax(x)
         print("Inferred value:", infer_val)
         print("Digit probabilities:", x)
