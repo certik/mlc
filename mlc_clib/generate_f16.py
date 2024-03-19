@@ -61,7 +61,6 @@ ll = Inference(
             max_pool_2d(64, 11, 11, "tmp6", "tmp7"),
             reshape((1600,), "tmp7"),
 
-            cast_f32_f16(1600, "tmp7", "tmp7c"),
             saxpy_f16(10, 1600, "dense_w", "dense_b", "tmp7c", "tmp7d"),
             softmax_f16(10, "tmp7d", "tmp8c"),
             cast_f16_f32(10, "tmp8c", "out"),
