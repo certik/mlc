@@ -97,44 +97,47 @@ def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
     return out
 
 def run_model_np(N, inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+    # We operate on (Channel, H, W, Batch) arrays
     assert inp.shape == (28, 28, N)
     out2 = np.empty((10,N), dtype=np.float32)
+    tmp1 = np.empty((1,28,28,N), dtype=np.float32)
+    tmp1[0,:,:,:] = inp[:,:,:]
+
+    tmp2 = np.empty((32,26,26,N), dtype=np.float32)
     for b in range(N):
-        inp_ = np.expand_dims(inp[:,:,b], 0)
-        out = inp_.copy()
+        tmp2[:,:,:,b] = conv2d(1, 32, 3, kernel1, bias1, tmp1[:,:,:,b])
 
-        # Conv2D
-        # (C_out, C_in, H, W)
-        out = conv2d(1, 32, 3, kernel1, bias1, out)
+    tmp3 = np.empty((32,26,26,N), dtype=np.float32)
+    for b in range(N):
+        tmp3[:,:,:,b] = relu(tmp2[:,:,:,b])
 
-        # ReLU
-        out = relu(out)
+    tmp4 = np.empty((32,13,13,N), dtype=np.float32)
+    for b in range(N):
+        tmp4[:,:,:,b] = max_pool_2d(tmp3[:,:,:,b])
 
-        # MaxPool2D
-        out = max_pool_2d(out)
+    tmp5 = np.empty((64,11,11,N), dtype=np.float32)
+    for b in range(N):
+        tmp5[:,:,:,b] = conv2d(32, 64, 3, kernel2, bias2, tmp4[:,:,:,b])
 
-        # Conv2D
-        # (C_out, C_in, H, W)
-        out = conv2d(32, 64, 3, kernel2, bias2, out)
+    tmp6 = np.empty((64,11,11,N), dtype=np.float32)
+    for b in range(N):
+        tmp6[:,:,:,b] = relu(tmp5[:,:,:,b])
 
-        # ReLU
-        out = relu(out)
+    tmp7 = np.empty((64,5,5,N), dtype=np.float32)
+    for b in range(N):
+        tmp7[:,:,:,b] = max_pool_2d(tmp6[:,:,:,b])
 
-        # MaxPool2D
-        out = max_pool_2d(out)
+    tmp8 = np.empty((1600,N), dtype=np.float32)
+    for b in range(N):
+        tmp8[:,b] = np.reshape(tmp7[:,:,:,b], (1600,))
 
-        # Flatten
-        out = np.reshape(out, (1600,))
+    tmp9 = np.empty((10,N), dtype=np.float32)
+    for b in range(N):
+        tmp9[:,b] = np.dot(dense_w, tmp8[:,b]) + dense_b
 
-        # Linear
-        # (N_out, C_in*H*W)
-        out = np.dot(dense_w, out) + dense_b
+    for b in range(N):
+        out2[:,b] = softmax(tmp9[:,b])
 
-        # Softmax
-        out = softmax(out)
-
-        assert out.shape == (10,)
-        out2[:,b] = out
     return out2
 
 
