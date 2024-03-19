@@ -66,18 +66,11 @@ int main() {
         printf("GGUF file not read; return code = %d\n", r);
         return r;
     }
-    // (32, 1, 3, 3) -- row major, C-order, (C_out, C_in, H, W)
     f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
-    // (32,)
-    f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
-    // (64, 32, 3, 3)
-    f32 *kernel2 = (f32*) (ctx.data + ctx.infos[2].offset);
-    // (64,)
-    f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
-    // (10, 1600)
+    f32 *kernel2 = (f32*) (ctx.data + ctx.infos[1].offset);
+    f32 *kernel3 = (f32*) (ctx.data + ctx.infos[2].offset);
+    f32 *kernel4 = (f32*) (ctx.data + ctx.infos[3].offset);
     f32 *dense_w = (f32*) (ctx.data + ctx.infos[4].offset);
-    // (10,)
-    f32 *dense_b = (f32*) (ctx.data + ctx.infos[5].offset);
 
     for (int digit_idx_i=0; digit_idx_i < 11; digit_idx_i++) {
         int digit_idx = 4213 + digit_idx_i;
@@ -91,9 +84,8 @@ int main() {
         f32 *out = malloc(10*sizeof(f32));
 
         inference(in, out,
-                kernel1, bias1,
-                kernel2, bias2,
-                dense_w, dense_b);
+                kernel1, kernel2, kernel3, kernel4,
+                dense_w);
 
         printf("Digit probabilities:\n");
         print_A(out);
