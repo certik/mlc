@@ -35,7 +35,9 @@ def train(model_name, epochs):
 
     model = CNN()
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # Requires macOS 12.3+:
+    #device = torch.device("mps")
+    device = torch.device("cpu")
     model.to(device)
     model.compile(fullgraph=True, dynamic=False)
 
