@@ -37,7 +37,7 @@ def train(model_name, epochs):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
-    model.compile()
+    model.compile(fullgraph=True, dynamic=False)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
