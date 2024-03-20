@@ -87,6 +87,29 @@ def conv2d_kernel(kernel_size, weight, x):
             out[h,w] = np.sum(weight*x[h:h+kernel_size,w:w+kernel_size])
     return out
 
+# (h, w)
+# An equivalent kernel that has the boxcar indices and the sum written out
+# explicitly
+def conv2d_kernel2(kernel_size, weight, x):
+    assert len(weight.shape) == 2
+    assert weight.shape[0] == kernel_size
+    assert weight.shape[1] == kernel_size
+    assert len(x.shape) == 2
+    in_h, in_w = x.shape
+    out_w = in_w - (kernel_size-1)
+    out_h = in_h - (kernel_size-1)
+    out = np.empty((out_h, out_w), dtype=x.dtype)
+
+    for h in range(out_h):
+        for w in range(out_w):
+            s = 0
+            for i in range(kernel_size):
+                for j in range(kernel_size):
+                    s += weight[i,j]*x[h+i,w+j]
+            out[h,w] = s
+    return out
+
+
 # (batch, channel, h, w)
 def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
     in_channels_x, in_h, in_w = x.shape
