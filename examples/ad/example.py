@@ -11,6 +11,9 @@ class Integer:
     def sdiff(self, x):
         return Integer(0)
 
+    def ndiff(self, x, d):
+        return 0
+
     def __str__(self):
         return f"{self.i}"
 
@@ -28,6 +31,12 @@ class Symbol:
         else:
             return Integer(0)
 
+    def ndiff(self, x, d):
+        if x == self:
+            return 1
+        else:
+            return 0
+
     def __str__(self):
         return f"{self.name}"
 
@@ -42,6 +51,9 @@ class Add:
 
     def sdiff(self, x):
         return Add(self.left.sdiff(x), self.right.sdiff(x))
+
+    def ndiff(self, x, d):
+        return self.left.ndiff(x, d) + self.right.ndiff(x, d)
 
     def __str__(self):
         return f"({self.left} + {self.right})"
@@ -59,6 +71,10 @@ class Mul:
         return Add(Mul(self.left.sdiff(x),self.right),
                 Mul(self.left, self.right.sdiff(x)))
 
+    def ndiff(self, x, d):
+        return self.left.ndiff(x,d)*self.right.n(d) + \
+                self.left.n(d)*self.right.ndiff(x,d)
+
     def __str__(self):
         return f"({self.left} * {self.right})"
 
@@ -72,6 +88,9 @@ class Sin:
 
     def sdiff(self, x):
         return Mul(Cos(self.x), self.x.sdiff(x))
+
+    def ndiff(self, x, d):
+        return math.cos(self.x.n(d)) * self.x.ndiff(x,d)
 
     def __str__(self):
         return f"sin({self.x})"
@@ -87,6 +106,9 @@ class Cos:
     def sdiff(self, x):
         return Mul(Mul(Integer(-1), Sin(self.x)), self.x.sdiff(x))
 
+    def ndiff(self, x, d):
+        return -math.sin(self.x.n(d)) * self.x.ndiff(x, d)
+
     def __str__(self):
         return f"cos({self.x})"
 
@@ -101,6 +123,9 @@ class Square:
     def sdiff(self, x):
         return Mul(Mul(Integer(2), self.x), self.x.sdiff(x))
 
+    def ndiff(self, x, d):
+        return 2 * self.x.n(d) * self.x.ndiff(x,d)
+
     def __str__(self):
         return f"({self.x})^2"
 
@@ -109,6 +134,9 @@ x = Symbol("x")
 y = Symbol("y")
 L = Add(Mul(x, y), Square(Sin(x)))
 print(L)
-print(L.n({x: 0.1, y: 0.3}))
+vals = {x: 0.1, y: 0.3}
+print(L.n(vals))
 print(L.sdiff(x))
 print(L.sdiff(y))
+print(L.ndiff(x, vals))
+print(L.ndiff(y, vals))
