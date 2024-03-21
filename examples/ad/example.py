@@ -187,7 +187,7 @@ class Square:
         self.x.bsdiff(Mul(Mul(Integer(2),self.x),deriv))
 
     def __str__(self):
-        return f"({self.x})^2"
+        return f"({self.x})**2"
 
 
 x = Symbol("x")
