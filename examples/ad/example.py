@@ -14,6 +14,9 @@ class Integer:
     def ndiff(self, x, d):
         return 0
 
+    def bndiff(self, deriv, d):
+        pass
+
     def __str__(self):
         return f"{self.i}"
 
@@ -21,6 +24,7 @@ class Symbol:
 
     def __init__(self, name):
         self.name = name
+        self.partial = 0
 
     def n(self, d):
         return d[self]
@@ -36,6 +40,9 @@ class Symbol:
             return 1
         else:
             return 0
+
+    def bndiff(self, deriv, d):
+        self.partial += deriv
 
     def __str__(self):
         return f"{self.name}"
@@ -54,6 +61,10 @@ class Add:
 
     def ndiff(self, x, d):
         return self.left.ndiff(x, d) + self.right.ndiff(x, d)
+
+    def bndiff(self, deriv, d):
+        self.left.bndiff(deriv, d)
+        self.right.bndiff(deriv, d)
 
     def __str__(self):
         return f"({self.left} + {self.right})"
@@ -74,6 +85,10 @@ class Mul:
     def ndiff(self, x, d):
         return self.left.ndiff(x,d)*self.right.n(d) + \
                 self.left.n(d)*self.right.ndiff(x,d)
+
+    def bndiff(self, deriv, d):
+        self.left.bndiff(self.right.n(d)*deriv, d)
+        self.right.bndiff(self.left.n(d)*deriv, d)
 
     def __str__(self):
         return f"({self.left} * {self.right})"
@@ -149,5 +164,10 @@ z = Add(Mul(x, Add(x, y)), Mul(y, y))
 vals = {x: 2, y: 3}
 
 print("z =", z.n(vals))             # Output: z = 19
+print("Forward:")
 print("∂z/∂x =", z.ndiff(x, vals))  # Output: ∂z/∂x = 7
 print("∂z/∂y =", z.ndiff(y, vals))  # Output: ∂z/∂y = 8
+print("Backward:")
+z.bndiff(1, vals)
+print("∂z/∂x =", x.partial)  # Output: ∂z/∂x = 7
+print("∂z/∂y =", y.partial)  # Output: ∂z/∂y = 8
