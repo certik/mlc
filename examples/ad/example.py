@@ -140,3 +140,14 @@ print(L.sdiff(x))
 print(L.sdiff(y))
 print(L.ndiff(x, vals))
 print(L.ndiff(y, vals))
+print()
+print()
+
+# https://en.wikipedia.org/wiki/Automatic_differentiation
+# Example: Finding the partials of z = x * (x + y) + y * y at (x, y) = (2, 3)
+z = Add(Mul(x, Add(x, y)), Mul(y, y))
+vals = {x: 2, y: 3}
+
+print("z =", z.n(vals))             # Output: z = 19
+print("∂z/∂x =", z.ndiff(x, vals))  # Output: ∂z/∂x = 7
+print("∂z/∂y =", z.ndiff(y, vals))  # Output: ∂z/∂y = 8
