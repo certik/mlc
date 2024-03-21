@@ -17,6 +17,9 @@ class Integer:
     def bndiff(self, deriv, d):
         pass
 
+    def bclean(self):
+        pass
+
     def bsdiff(self, deriv):
         pass
 
