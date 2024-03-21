@@ -230,3 +230,19 @@ z.bclean()
 z.bsdiff(Integer(1))
 print("∂z/∂x =", x.partial)  # Output: 2*x + y
 print("∂z/∂y =", y.partial)  # Output: x + 2*y
+print()
+print()
+
+
+################################################################################
+
+L = Mul(Mul(x, y), Square(Square(Sin(x))))
+print("L =", L)
+print("Forward:")
+print("∂L/∂x =", L.sdiff(x))
+print("∂L/∂y =", L.sdiff(y))
+print("Backward:")
+L.bclean()
+L.bsdiff(Integer(1))
+print("∂z/∂x =", x.partial)
+print("∂z/∂y =", y.partial)
