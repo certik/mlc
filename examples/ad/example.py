@@ -17,6 +17,9 @@ class Integer:
     def bndiff(self, deriv, d):
         pass
 
+    def bsdiff(self, deriv):
+        pass
+
     def __str__(self):
         return f"{self.i}"
 
@@ -24,7 +27,6 @@ class Symbol:
 
     def __init__(self, name):
         self.name = name
-        self.partial = 0
 
     def n(self, d):
         return d[self]
@@ -41,8 +43,14 @@ class Symbol:
         else:
             return 0
 
+    def bclean(self):
+        self.partial = 0
+
     def bndiff(self, deriv, d):
         self.partial += deriv
+
+    def bsdiff(self, deriv):
+        self.partial = Add(self.partial, deriv)
 
     def __str__(self):
         return f"{self.name}"
@@ -62,9 +70,17 @@ class Add:
     def ndiff(self, x, d):
         return self.left.ndiff(x, d) + self.right.ndiff(x, d)
 
+    def bclean(self):
+        self.left.bclean()
+        self.right.bclean()
+
     def bndiff(self, deriv, d):
         self.left.bndiff(deriv, d)
         self.right.bndiff(deriv, d)
+
+    def bsdiff(self, deriv):
+        self.left.bsdiff(deriv)
+        self.right.bsdiff(deriv)
 
     def __str__(self):
         return f"({self.left} + {self.right})"
@@ -86,9 +102,17 @@ class Mul:
         return self.left.ndiff(x,d)*self.right.n(d) + \
                 self.left.n(d)*self.right.ndiff(x,d)
 
+    def bclean(self):
+        self.left.bclean()
+        self.right.bclean()
+
     def bndiff(self, deriv, d):
         self.left.bndiff(self.right.n(d)*deriv, d)
         self.right.bndiff(self.left.n(d)*deriv, d)
+
+    def bsdiff(self, deriv):
+        self.left.bsdiff(Mul(self.right,deriv))
+        self.right.bsdiff(Mul(self.left,deriv))
 
     def __str__(self):
         return f"({self.left} * {self.right})"
@@ -170,6 +194,11 @@ print("∂z/∂y =", z.sdiff(y))  # Output: x + 2*y
 print("∂z/∂x =", z.ndiff(x, vals))  # Output: ∂z/∂x = 7
 print("∂z/∂y =", z.ndiff(y, vals))  # Output: ∂z/∂y = 8
 print("Backward:")
+z.bclean()
 z.bndiff(1, vals)
 print("∂z/∂x =", x.partial)  # Output: ∂z/∂x = 7
 print("∂z/∂y =", y.partial)  # Output: ∂z/∂y = 8
+z.bclean()
+z.bsdiff(Integer(1))
+print("∂z/∂x =", x.partial)  # Output: 2*x + y
+print("∂z/∂y =", y.partial)  # Output: x + 2*y
