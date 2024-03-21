@@ -165,6 +165,8 @@ vals = {x: 2, y: 3}
 
 print("z =", z.n(vals))             # Output: z = 19
 print("Forward:")
+print("∂z/∂x =", z.sdiff(x))  # Output: 2*x + y
+print("∂z/∂y =", z.sdiff(y))  # Output: x + 2*y
 print("∂z/∂x =", z.ndiff(x, vals))  # Output: ∂z/∂x = 7
 print("∂z/∂y =", z.ndiff(y, vals))  # Output: ∂z/∂y = 8
 print("Backward:")
