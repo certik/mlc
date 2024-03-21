@@ -131,6 +131,15 @@ class Sin:
     def ndiff(self, x, d):
         return math.cos(self.x.n(d)) * self.x.ndiff(x,d)
 
+    def bclean(self):
+        self.x.bclean()
+
+    def bndiff(self, deriv, d):
+        self.x.bndiff(math.cos(self.x.n(d)) * deriv, d)
+
+    def bsdiff(self, deriv):
+        self.x.bsdiff(Mul(Cos(self.x), deriv))
+
     def __str__(self):
         return f"sin({self.x})"
 
@@ -165,6 +174,15 @@ class Square:
     def ndiff(self, x, d):
         return 2 * self.x.n(d) * self.x.ndiff(x,d)
 
+    def bclean(self):
+        self.x.bclean()
+
+    def bndiff(self, deriv, d):
+        self.x.bndiff(2*self.x.n(d)*deriv, d)
+
+    def bsdiff(self, deriv):
+        self.x.bsdiff(Mul(Mul(Integer(2),self.x),deriv))
+
     def __str__(self):
         return f"({self.x})^2"
 
@@ -176,10 +194,19 @@ print(L)
 vals = {x: 0.1, y: 0.3}
 print("L =", L.n(vals))
 print("Forward:")
-print("∂L/∂x =", L.sdiff(x))
-print("∂L/∂y =", L.sdiff(y))
-print("∂L/∂x =", L.ndiff(x, vals))
-print("∂L/∂y =", L.ndiff(y, vals))
+print("∂L/∂x =", L.sdiff(x)) # y + 2*sin(x)*cos(x)
+print("∂L/∂y =", L.sdiff(y)) # x
+print("∂L/∂x =", L.ndiff(x, vals)) # 0.49866933079506126
+print("∂L/∂y =", L.ndiff(y, vals)) # 0.1
+print("Backward:")
+L.bclean()
+L.bsdiff(Integer(1))
+print("∂z/∂x =", x.partial) # y + 2*sin(x)*cos(x)
+print("∂z/∂y =", y.partial) # x
+L.bclean()
+L.bndiff(1, vals)
+print("∂z/∂x =", x.partial) # 0.49866933079506126
+print("∂z/∂y =", y.partial) # 0.1
 print()
 print()
 
