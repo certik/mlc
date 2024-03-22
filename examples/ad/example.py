@@ -257,12 +257,12 @@ print("∂L/∂y =", L.ndiff(y, vals)) # 0.1
 print("Backward:")
 L.bclean()
 L.bsdiff(Integer(1))
-print("∂z/∂x =", x.partial) # y + 2*sin(x)*cos(x)
-print("∂z/∂y =", y.partial) # x
+print("∂L/∂x =", x.partial) # y + 2*sin(x)*cos(x)
+print("∂L/∂y =", y.partial) # x
 L.bclean()
 L.bndiff(1, vals)
-print("∂z/∂x =", x.partial) # 0.49866933079506126
-print("∂z/∂y =", y.partial) # 0.1
+print("∂L/∂x =", x.partial) # 0.49866933079506126
+print("∂L/∂y =", y.partial) # 0.1
 print()
 print()
 
@@ -300,5 +300,5 @@ print("∂L/∂y =", L.fsdiff(y))
 print("Backward:")
 L.bclean()
 L.bsdiff(Integer(1))
-print("∂z/∂x =", x.partial)
-print("∂z/∂y =", y.partial)
+print("∂L/∂x =", x.partial)
+print("∂L/∂y =", y.partial)
