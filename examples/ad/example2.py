@@ -1,14 +1,16 @@
 import numpy as np
 import torch
 np.random.seed(1)
+x0 = np.array([1, 2, 3, 4, 5], dtype=np.float32)
+y0 = np.zeros(3, dtype=np.float32)
 w0 = np.random.randn(5, 3).astype(np.float32)
 b0 = np.random.randn(3).astype(np.float32)
 
 ################################################################################
 # PyTorch
 
-x = torch.ones(5)  # input array
-y = torch.zeros(3)  # expected output
+x = torch.tensor(x0)  # input array
+y = torch.tensor(y0)  # expected output
 w = torch.tensor(w0, requires_grad=True)
 b = torch.tensor(b0, requires_grad=True)
 z = torch.matmul(x, w)+b
@@ -56,8 +58,8 @@ print()
 ################################################################################
 # NumPy
 
-x = np.ones(5)  # input array
-y = np.zeros(3)  # expected output
+x = x0  # input array
+y = y0  # expected output
 w = w0
 b = b0
 z = np.matmul(x, w) + b
