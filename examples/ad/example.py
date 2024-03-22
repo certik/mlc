@@ -246,7 +246,7 @@ class Square:
 x = Symbol("x")
 y = Symbol("y")
 L = Add(Mul(x, y), Square(Sin(x)))
-print(L)
+print("L =", L)
 vals = {x: 0.1, y: 0.3}
 print("L =", L.n(vals))
 print("Forward:")
