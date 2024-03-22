@@ -140,8 +140,31 @@ class Sin:
     def bndiff(self, deriv, d):
         self.x.bndiff(math.cos(self.x.n(d)) * deriv, d)
 
-    def bsdiff(self, deriv):
-        self.x.bsdiff(Mul(Cos(self.x), deriv))
+    # This node `Sin` represents:
+    # u = sin(v)
+    # where `v` can be a function of other variables (e.g., v = f(x, y, z)).
+
+    # sdiff: Forward mode:
+    # Input: x = x
+    # Output: ∂u/∂x = ∂u/∂v * ∂v/∂x = cos(v) * v.sdiff(x)
+    # The function returns the output directly, and uses `v` in the process
+
+    # bsdiff: Reverse mode:
+    # Input: dLdu = ∂L/∂u
+    # bsdiff computes: ∂L/∂v = ∂L/∂u * ∂u/∂v = deriv * cos(v)
+    # The function does not return directly, rather it passes ∂L/∂v down to `v`
+    # via.bsdiff(∂L/∂v). Eventually it reaches `x` (via multiple paths in
+    # general) and we keep summing (accumulating) the expressions we get there.
+    # The function does not call any other `bsdiff` recursively in order to
+    # compute ∂L/∂v. It only calls `bsdiff` to pass the result down the tree.
+
+    def sdiff(self, x):
+        return Mul(Cos(self.x), self.x.sdiff(x))
+
+    def bsdiff(u, dLdu):
+        v = u.x
+        dLdv = Mul(dLdu, Cos(v))
+        v.bsdiff(dLdv)
 
     def __str__(self):
         return f"sin({self.x})"
