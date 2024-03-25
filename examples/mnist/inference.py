@@ -96,7 +96,7 @@ def run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     return out
 
-def run_model_tf(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+def run_model_tf(inp):
     tf_model = keras.models.load_model("mnist-cnn-beautiful-model")
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
@@ -228,16 +228,16 @@ def main():
         print("Inferred value:", infer_val)
         print("Digit probabilities:", x)
 
-        x = run_model_tf(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        x = run_model_tf(inp)
         infer_val = np.argmax(x)
         print("Inferred value:", infer_val)
         print("Digit probabilities:", x)
 
-        print("---------")
-        x = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
-        infer_val = np.argmax(x)
-        print("NumPy Inferred value:", infer_val)
-        print("NumPy Digit probabilities:", x)
+        #print("---------")
+        #iix = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        #infer_val = np.argmax(x)
+        #print("NumPy Inferred value:", infer_val)
+        #print("NumPy Digit probabilities:", x)
 
 
 if __name__ == '__main__':
