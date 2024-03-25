@@ -74,6 +74,11 @@ def convert(model_name):
         model.layers[1].weights[0].numpy(), (3, 2, 0, 1)))
     gguf_writer.add_tensor("bias2", model.layers[1].weights[1].numpy())
 
+    gguf_writer.add_tensor("batchnorm1_gamma", model.layers[2].weights[0].numpy())
+    gguf_writer.add_tensor("batchnorm1_beta", model.layers[2].weights[1].numpy())
+    gguf_writer.add_tensor("batchnorm1_moving_mean", model.layers[2].weights[2].numpy())
+    gguf_writer.add_tensor("batchnorm1_moving_variance", model.layers[2].weights[3].numpy())
+
     # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
     gguf_writer.add_tensor("kernel3", np.transpose(
         model.layers[4].weights[0].numpy(), (3, 2, 0, 1)))
@@ -84,6 +89,11 @@ def convert(model_name):
         model.layers[5].weights[0].numpy(), (3, 2, 0, 1)))
     bias4 = model.layers[5].weights[1].numpy()
     gguf_writer.add_tensor("bias4", bias4)
+
+    gguf_writer.add_tensor("batchnorm2_gamma", model.layers[6].weights[0].numpy())
+    gguf_writer.add_tensor("batchnorm2_beta", model.layers[6].weights[1].numpy())
+    gguf_writer.add_tensor("batchnorm2_moving_mean", model.layers[6].weights[2].numpy())
+    gguf_writer.add_tensor("batchnorm2_moving_variance", model.layers[6].weights[3].numpy())
 
     dense_w = model.layers[-1].weights[0].numpy()
     # (H*W*C_in, N_out) -> (H, W, C_in, N_out)
