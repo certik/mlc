@@ -97,7 +97,7 @@ def run_model_pt(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
     return out
 
 def run_model_tf(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
-    tf_model = keras.models.load_model("mnist-cnn-model")
+    tf_model = keras.models.load_model("mnist-cnn-beautiful-model")
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
