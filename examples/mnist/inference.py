@@ -86,12 +86,16 @@ def run_model_pt(inp, kernel1, bias1, kernel2, bias2, kernel3, bias3,
                     bias2.copy()))
             self.model[6].weight = torch.nn.Parameter(torch.from_numpy(
                     kernel3.copy()))
-            self.model[6].bias = torch.nn.Parameter(torch.from_numpy(
+
+            self.model[7].weight = torch.nn.Parameter(torch.from_numpy(
+                    kernel3.copy()))
+            self.model[7].bias = torch.nn.Parameter(torch.from_numpy(
                     bias3.copy()))
-            self.model[8].weight = torch.nn.Parameter(torch.from_numpy(
+            self.model[9].weight = torch.nn.Parameter(torch.from_numpy(
                     kernel4.copy()))
-            self.model[8].bias = torch.nn.Parameter(torch.from_numpy(
+            self.model[9].bias = torch.nn.Parameter(torch.from_numpy(
                     bias4.copy()))
+
             self.model[13].weight = torch.nn.Parameter(torch.from_numpy(
                     dense_w.copy()))
             self.model[13].bias = torch.nn.Parameter(torch.from_numpy(
