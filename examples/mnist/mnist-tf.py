@@ -62,30 +62,35 @@ def train(model_name, epochs):
 def convert(model_name):
     model = keras.models.load_model(model_name)
     gguf_model_name = model_name + ".gguf"
-    gguf_writer = gguf.GGUFWriter(gguf_model_name, "mnist-cnn")
+    gguf_writer = gguf.GGUFWriter(gguf_model_name, "mnist-cnn-beautiful")
 
-    kernel1 = model.layers[0].weights[0].numpy()
     # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
-    kernel1 = np.transpose(kernel1, (3, 2, 0, 1))
-    gguf_writer.add_tensor("kernel1", kernel1)
+    gguf_writer.add_tensor("kernel1", np.transpose(
+        model.layers[0].weights[0].numpy(), (3, 2, 0, 1)))
+    gguf_writer.add_tensor("bias1", model.layers[0].weights[1].numpy())
 
-    bias1 = model.layers[0].weights[1].numpy()
-    gguf_writer.add_tensor("bias1", bias1)
-
-    kernel2 = model.layers[2].weights[0].numpy()
     # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
-    kernel2 = np.transpose(kernel2, (3, 2, 0, 1))
-    gguf_writer.add_tensor("kernel2", kernel2)
+    gguf_writer.add_tensor("kernel2", np.transpose(
+        model.layers[1].weights[0].numpy(), (3, 2, 0, 1)))
+    gguf_writer.add_tensor("bias2", model.layers[1].weights[1].numpy())
 
-    bias2 = model.layers[2].weights[1].numpy()
-    gguf_writer.add_tensor("bias2", bias2)
+    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
+    gguf_writer.add_tensor("kernel3", np.transpose(
+        model.layers[4].weights[0].numpy(), (3, 2, 0, 1)))
+    gguf_writer.add_tensor("bias3", model.layers[4].weights[1].numpy())
+
+    # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
+    gguf_writer.add_tensor("kernel4", np.transpose(
+        model.layers[5].weights[0].numpy(), (3, 2, 0, 1)))
+    bias4 = model.layers[5].weights[1].numpy()
+    gguf_writer.add_tensor("bias4", bias4)
 
     dense_w = model.layers[-1].weights[0].numpy()
     # (H*W*C_in, N_out) -> (H, W, C_in, N_out)
     # (H, W, C_in, N_out) -> (N_out, C_in, H, W)
     # (N_out, C_in, H, W) -> (N_out, C_in*H*W)
     N_out = dense_w.shape[1] # 10
-    C_in = bias2.shape[0] # 64
+    C_in = bias4.shape[0] # 64
     H = int(np.sqrt(dense_w.shape[0] / C_in)) # 5
     W = H # 5
     assert H*W*C_in == dense_w.shape[0]
