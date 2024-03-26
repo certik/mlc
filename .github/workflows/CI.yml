@@ -168,3 +168,45 @@ jobs:
             make
             ./mlc_clib
             git clean -dfx
+
+  mnist:
+    name: MNIST 2 inference
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: mamba-org/setup-micromamba@v1.8.0
+        with:
+          environment-file: examples/mnist/environment_tf.yml
+          create-args: >-
+            clang=17.0.6
+
+      - uses: hendrikmuhs/ccache-action@main
+        with:
+          variant: sccache
+          key: ${{ github.job }}-${{ matrix.os }}
+
+      - name: Install GGUF
+        shell: bash -e -x -l {0}
+        run: |
+            git clone https://github.com/ggerganov/llama.cpp
+            cd llama.cpp
+            git checkout 6e0438da3cc95b89cdbf55f45fa4e324d9076792
+            cd gguf-py
+            pip install .
+            cd ../..
+
+      - name: Download GGUF data
+        shell: bash -e -x -l {0}
+        run: |
+            cd examples/mnist
+            curl -O -L https://huggingface.co/certik/mnist/resolve/main/mnist-cnn-beautiful-model.gguf
+            curl -O -L https://huggingface.co/certik/mnist/resolve/main/mnist-tests.gguf
+
+      - name: Run NumPy inference
+        shell: bash -e -x -l {0}
+        run: |
+            cd examples/mnist
+            python inference_np.py
