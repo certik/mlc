@@ -209,4 +209,10 @@ jobs:
         shell: bash -e -x -l {0}
         run: |
             cd examples/mnist
-            python inference_np.py
+            python inference2_np.py
+
+      - name: Run NumPy/TensorFlow inference
+        shell: bash -e -x -l {0}
+        run: |
+            cd examples/mnist
+            python inference2.py
