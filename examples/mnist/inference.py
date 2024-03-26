@@ -140,11 +140,11 @@ def run_model_pt(inp,
 
 def run_model_tf(inp):
     tf_model = keras.models.load_model("y4")
-    tf_model = keras.models.Sequential(tf_model.layers[:8])
+    #tf_model = keras.models.Sequential(tf_model.layers[:8])
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
-    out_tf = np.transpose(out_tf, (0, 3, 1, 2))
+    #out_tf = np.transpose(out_tf, (0, 3, 1, 2))
     #print("TF:", out_tf)
     #print("TF max:", out_tf.numpy().argmax())
     return out_tf
@@ -255,25 +255,11 @@ def run_model_np(inp,
     # MaxPool2D
     out = max_pool_2d(out)
 
-    return out
-
-    # Conv2D
-    # (C_out, C_in, H, W)
-    out = conv2d(32, 64, 3, kernel2, bias2, out)
-
-    # ReLU
-    out = relu(out)
-
-    # MaxPool2D
-    out = max_pool_2d(out)
-
     # Flatten
-    out = np.reshape(out, (1600,))
-
+    out = np.reshape(out, (576,))
     # Linear
     # (N_out, C_in*H*W)
     out = np.dot(dense_w, out) + dense_b
-
     # Softmax
     out = softmax(out)
 
@@ -339,7 +325,7 @@ def main():
         #infer_val = np.argmax(x)
         #print("Inferred value:", infer_val)
         #print("Digit probabilities:", x)
-        print(x[0,:,:1,:1])
+        print(x)
 
         #print("---------")
         x = run_model_np(inp,
@@ -349,7 +335,7 @@ def main():
                 batchnorm2_moving_mean,
                     batchnorm2_moving_variance,
                 dense_w, dense_b)
-        print(x[:,:1,:1])
+        print(x)
         #infer_val = np.argmax(x)
         #print("NumPy Inferred value:", infer_val)
         #print("NumPy Digit probabilities:", x)
