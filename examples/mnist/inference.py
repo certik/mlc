@@ -139,7 +139,7 @@ def run_model_pt(inp,
     return out
 
 def run_model_tf(inp):
-    tf_model = keras.models.load_model("y4")
+    tf_model = keras.models.load_model("mnist-cnn-beautiful-model")
     #tf_model = keras.models.Sequential(tf_model.layers[:8])
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
@@ -287,7 +287,7 @@ def main():
     print("    Done.")
 
     print("Loading MNIST model GGUF...")
-    g = GGUFReader("y4.gguf")
+    g = GGUFReader("mnist-cnn-beautiful-model.gguf")
     kernel1 = gguf_to_array(g.tensors[0], "kernel1")
     bias1 = gguf_to_array(g.tensors[1], "bias1")
     kernel2 = gguf_to_array(g.tensors[2], "kernel2")
