@@ -169,7 +169,7 @@ jobs:
             ./mlc_clib
             git clean -dfx
 
-  mnist:
+  mnist2:
     name: MNIST 2 inference
     runs-on: ubuntu-latest
     steps:
