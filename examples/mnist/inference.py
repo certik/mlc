@@ -140,7 +140,7 @@ def run_model_pt(inp,
 
 def run_model_tf(inp):
     tf_model = keras.models.load_model("y4")
-    tf_model = keras.models.Sequential(tf_model.layers[:3])
+    tf_model = keras.models.Sequential(tf_model.layers[:4])
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
@@ -238,13 +238,14 @@ def run_model_np(inp,
     # ReLU
     out = relu(out)
 
+    # BatchNorm2D
     out = batch_norm_2d(32, batchnorm1_moving_mean, batchnorm1_moving_variance,
             out, eps=0.001, momentum=0.01)
 
-    return out
-
     # MaxPool2D
     out = max_pool_2d(out)
+
+    return out
 
     # Conv2D
     # (C_out, C_in, H, W)
