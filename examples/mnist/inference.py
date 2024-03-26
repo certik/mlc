@@ -263,10 +263,10 @@ def run_model_np(inp,
     # Softmax
     out = softmax(out)
 
-    print("Output shape:", out.shape)
+    #print("Output shape:", out.shape)
     assert out.shape == (10,)
-    print("NumPy:", out)
-    print("NumPy max:", out.argmax())
+    #print("NumPy:", out)
+    #print("NumPy max:", out.argmax())
 
     return out
 
@@ -322,10 +322,9 @@ def main():
         #print(x[0,:,:1,:1])
 
         x = run_model_tf(inp)
-        #infer_val = np.argmax(x)
-        #print("Inferred value:", infer_val)
-        #print("Digit probabilities:", x)
-        print(x)
+        infer_val = np.argmax(x)
+        print("TF Inferred value:", infer_val)
+        print("TF Digit probabilities:", x)
 
         #print("---------")
         x = run_model_np(inp,
@@ -335,10 +334,9 @@ def main():
                 batchnorm2_moving_mean,
                     batchnorm2_moving_variance,
                 dense_w, dense_b)
-        print(x)
-        #infer_val = np.argmax(x)
-        #print("NumPy Inferred value:", infer_val)
-        #print("NumPy Digit probabilities:", x)
+        infer_val = np.argmax(x)
+        print("NumPy Inferred value:", infer_val)
+        print("NumPy Digit probabilities:", x)
 
 
 if __name__ == '__main__':
