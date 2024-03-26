@@ -207,8 +207,10 @@ def batch_norm_2d(in_channels, moving_mean, moving_variance,
     C, W, H = x.shape
     y = np.empty((in_channels, W, H), dtype=x.dtype)
     for c in range(C):
-        y[c,:,:] = (x[c,:,:] - np.mean(x[c,:,:])) / \
-                np.sqrt(np.var(x[c,:,:]) + eps)
+        #y[c,:,:] = (x[c,:,:] - np.mean(x[c,:,:])) / \
+        #        np.sqrt(np.var(x[c,:,:]) + eps)
+        y[c,:,:] = (x[c,:,:] - moving_mean[c]) / \
+                np.sqrt(moving_variance[c] + eps)
     return y
 
 def run_model_np(inp,
