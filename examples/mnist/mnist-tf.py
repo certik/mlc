@@ -34,7 +34,7 @@ def train(model_name, epochs):
 
             layers.Conv2D(32, kernel_size=(5, 5), activation="relu"),
             layers.Conv2D(32, kernel_size=(5, 5), activation="relu"),
-            layers.BatchNormalization(),
+            layers.BatchNormalization(center=False, scale=False),
             layers.MaxPooling2D(pool_size=(2, 2)),
 
             layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
@@ -74,10 +74,10 @@ def convert(model_name):
         model.layers[1].weights[0].numpy(), (3, 2, 0, 1)))
     gguf_writer.add_tensor("bias2", model.layers[1].weights[1].numpy())
 
-    gguf_writer.add_tensor("batchnorm1_gamma", model.layers[2].weights[0].numpy())
-    gguf_writer.add_tensor("batchnorm1_beta", model.layers[2].weights[1].numpy())
-    gguf_writer.add_tensor("batchnorm1_moving_mean", model.layers[2].weights[2].numpy())
-    gguf_writer.add_tensor("batchnorm1_moving_variance", model.layers[2].weights[3].numpy())
+    #gguf_writer.add_tensor("batchnorm1_gamma", model.layers[2].weights[0].numpy())
+    #gguf_writer.add_tensor("batchnorm1_beta", model.layers[2].weights[1].numpy())
+    gguf_writer.add_tensor("batchnorm1_moving_mean", model.layers[2].weights[0].numpy())
+    gguf_writer.add_tensor("batchnorm1_moving_variance", model.layers[2].weights[1].numpy())
 
     # (H, W, C_in, C_out) -> (C_out, C_in, H, W)
     gguf_writer.add_tensor("kernel3", np.transpose(

@@ -52,7 +52,7 @@ def gguf_to_array(g, expected_name):
 
 def run_model_pt(inp,
         kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
-        batchnorm1_gamma, batchnorm1_beta, batchnorm1_moving_mean,
+        batchnorm1_moving_mean,
             batchnorm1_moving_variance,
         batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
             batchnorm2_moving_variance,
@@ -65,19 +65,20 @@ def run_model_pt(inp,
                 torch.nn.ReLU(),
                 torch.nn.Conv2d(32, 32, 5, bias=True),  # 2
                 torch.nn.ReLU(),
-                torch.nn.BatchNorm2d(32),               # 4
-                torch.nn.MaxPool2d((2, 2)),
+                torch.nn.BatchNorm2d(32, eps=0.001, momentum=0.01,
+                    track_running_stats=False, affine=False), # 4
+                #torch.nn.MaxPool2d((2, 2)),
 
-                torch.nn.Conv2d(32, 64, 3, bias=True),  # 6
-                torch.nn.ReLU(),
-                torch.nn.Conv2d(64, 64, 3, bias=True),  # 8
-                torch.nn.ReLU(),
-                torch.nn.BatchNorm2d(64),               # 10
-                torch.nn.MaxPool2d((2, 2)),
+                #torch.nn.Conv2d(32, 64, 3, bias=True),  # 6
+                #torch.nn.ReLU(),
+                #torch.nn.Conv2d(64, 64, 3, bias=True),  # 8
+                #torch.nn.ReLU(),
+                #torch.nn.BatchNorm2d(64),               # 10
+                #torch.nn.MaxPool2d((2, 2)),
 
-                torch.nn.Flatten(0, -1),
-                torch.nn.Linear(576, 10, bias=True),    # 13
-                torch.nn.Softmax(dim=0),
+                #torch.nn.Flatten(0, -1),
+                #torch.nn.Linear(576, 10, bias=True),    # 13
+                #torch.nn.Softmax(dim=0),
                 )
 
             self.model[0].weight = torch.nn.Parameter(torch.from_numpy(
@@ -88,36 +89,36 @@ def run_model_pt(inp,
                     kernel2.copy()))
             self.model[2].bias = torch.nn.Parameter(torch.from_numpy(
                     bias2.copy()))
-            self.model[4].weight = torch.nn.Parameter(torch.from_numpy(
-                    batchnorm1_gamma.copy()))
-            self.model[4].bias = torch.nn.Parameter(torch.from_numpy(
-                    batchnorm1_beta.copy()))
+            #self.model[4].weight = torch.nn.Parameter(torch.from_numpy(
+            #        batchnorm1_gamma.copy()))
+            #self.model[4].bias = torch.nn.Parameter(torch.from_numpy(
+            #        batchnorm1_beta.copy()))
             self.model[4].running_mean = torch.nn.Parameter(torch.from_numpy(
                     batchnorm1_moving_mean.copy()), requires_grad=False)
             self.model[4].running_var = torch.nn.Parameter(torch.from_numpy(
                     batchnorm1_moving_variance.copy()), requires_grad=False)
-
-            self.model[6].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel3.copy()))
-            self.model[6].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias3.copy()))
-            self.model[8].weight = torch.nn.Parameter(torch.from_numpy(
-                    kernel4.copy()))
-            self.model[8].bias = torch.nn.Parameter(torch.from_numpy(
-                    bias4.copy()))
-            self.model[10].weight = torch.nn.Parameter(torch.from_numpy(
-                    batchnorm2_gamma.copy()))
-            self.model[10].bias = torch.nn.Parameter(torch.from_numpy(
-                    batchnorm2_beta.copy()))
-            self.model[10].running_mean = torch.nn.Parameter(torch.from_numpy(
-                    batchnorm2_moving_mean.copy()), requires_grad=False)
-            self.model[10].running_var = torch.nn.Parameter(torch.from_numpy(
-                    batchnorm2_moving_variance.copy()), requires_grad=False)
-
-            self.model[13].weight = torch.nn.Parameter(torch.from_numpy(
-                    dense_w.copy()))
-            self.model[13].bias = torch.nn.Parameter(torch.from_numpy(
-                    dense_b.copy()))
+#
+#            self.model[6].weight = torch.nn.Parameter(torch.from_numpy(
+#                    kernel3.copy()))
+#            self.model[6].bias = torch.nn.Parameter(torch.from_numpy(
+#                    bias3.copy()))
+#            self.model[8].weight = torch.nn.Parameter(torch.from_numpy(
+#                    kernel4.copy()))
+#            self.model[8].bias = torch.nn.Parameter(torch.from_numpy(
+#                    bias4.copy()))
+#            self.model[10].weight = torch.nn.Parameter(torch.from_numpy(
+#                    batchnorm2_gamma.copy()))
+#            self.model[10].bias = torch.nn.Parameter(torch.from_numpy(
+#                    batchnorm2_beta.copy()))
+#            self.model[10].running_mean = torch.nn.Parameter(torch.from_numpy(
+#                    batchnorm2_moving_mean.copy()), requires_grad=False)
+#            self.model[10].running_var = torch.nn.Parameter(torch.from_numpy(
+#                    batchnorm2_moving_variance.copy()), requires_grad=False)
+#
+#            self.model[13].weight = torch.nn.Parameter(torch.from_numpy(
+#                    dense_w.copy()))
+#            self.model[13].bias = torch.nn.Parameter(torch.from_numpy(
+#                    dense_b.copy()))
 
         def forward(self, x):
             return self.model(x)
@@ -131,19 +132,21 @@ def run_model_pt(inp,
     torch_out = model(torch_inp)
     out = torch_out.detach().numpy()
     print("Output shape:", out.shape)
-    assert out.shape == (10,)
-    print("PT:", out)
-    print("PT max:", out.argmax())
+    #assert out.shape == (10,)
+    #print("PT:", out)
+    #print("PT max:", out.argmax())
 
     return out
 
 def run_model_tf(inp):
-    tf_model = keras.models.load_model("mnist-cnn-beautiful-model")
+    tf_model = keras.models.load_model("y4")
+    tf_model = keras.models.Sequential(tf_model.layers[:3])
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
-    print("TF:", out_tf)
-    print("TF max:", out_tf.numpy().argmax())
+    out_tf = np.transpose(out_tf, (0, 3, 1, 2))
+    #print("TF:", out_tf)
+    #print("TF max:", out_tf.numpy().argmax())
     return out_tf
 
 # (10,) -> (10,)
@@ -248,29 +251,29 @@ def main():
     print("    Done.")
 
     print("Loading MNIST model GGUF...")
-    g = GGUFReader("mnist-cnn-beautiful-model.gguf")
+    g = GGUFReader("y4.gguf")
     kernel1 = gguf_to_array(g.tensors[0], "kernel1")
     bias1 = gguf_to_array(g.tensors[1], "bias1")
     kernel2 = gguf_to_array(g.tensors[2], "kernel2")
     bias2 = gguf_to_array(g.tensors[3], "bias2")
-    batchnorm1_gamma = gguf_to_array(g.tensors[4], "batchnorm1_gamma")
-    batchnorm1_beta = gguf_to_array(g.tensors[5], "batchnorm1_beta")
-    batchnorm1_moving_mean = gguf_to_array(g.tensors[6],
+    #batchnorm1_gamma = gguf_to_array(g.tensors[4], "batchnorm1_gamma")
+    #batchnorm1_beta = gguf_to_array(g.tensors[5], "batchnorm1_beta")
+    batchnorm1_moving_mean = gguf_to_array(g.tensors[4],
             "batchnorm1_moving_mean")
-    batchnorm1_moving_variance = gguf_to_array(g.tensors[7],
+    batchnorm1_moving_variance = gguf_to_array(g.tensors[5],
             "batchnorm1_moving_variance")
-    kernel3 = gguf_to_array(g.tensors[8], "kernel3")
-    bias3 = gguf_to_array(g.tensors[9], "bias3")
-    kernel4 = gguf_to_array(g.tensors[10], "kernel4")
-    bias4 = gguf_to_array(g.tensors[11], "bias4")
-    batchnorm2_gamma = gguf_to_array(g.tensors[12], "batchnorm2_gamma")
-    batchnorm2_beta = gguf_to_array(g.tensors[13], "batchnorm2_beta")
-    batchnorm2_moving_mean = gguf_to_array(g.tensors[14],
+    kernel3 = gguf_to_array(g.tensors[6], "kernel3")
+    bias3 = gguf_to_array(g.tensors[7], "bias3")
+    kernel4 = gguf_to_array(g.tensors[8], "kernel4")
+    bias4 = gguf_to_array(g.tensors[9], "bias4")
+    batchnorm2_gamma = gguf_to_array(g.tensors[10], "batchnorm2_gamma")
+    batchnorm2_beta = gguf_to_array(g.tensors[11], "batchnorm2_beta")
+    batchnorm2_moving_mean = gguf_to_array(g.tensors[12],
             "batchnorm2_moving_mean")
-    batchnorm2_moving_variance = gguf_to_array(g.tensors[15],
+    batchnorm2_moving_variance = gguf_to_array(g.tensors[13],
             "batchnorm2_moving_variance")
-    dense_w = gguf_to_array(g.tensors[16], "dense_w")
-    dense_b = gguf_to_array(g.tensors[17], "dense_b")
+    dense_w = gguf_to_array(g.tensors[14], "dense_w")
+    dense_b = gguf_to_array(g.tensors[15], "dense_b")
     print("    Done.")
 
     for iter in range(N_iter):
@@ -282,19 +285,21 @@ def main():
 
         x = run_model_pt(inp,
                 kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
-                batchnorm1_gamma, batchnorm1_beta, batchnorm1_moving_mean,
+                batchnorm1_moving_mean,
                     batchnorm1_moving_variance,
                 batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
                     batchnorm2_moving_variance,
                 dense_w, dense_b)
-        infer_val = np.argmax(x)
-        print("Inferred value:", infer_val)
-        print("Digit probabilities:", x)
+        #infer_val = np.argmax(x)
+        #print("Inferred value:", infer_val)
+        #print("Digit probabilities:", x)
+        print(x[0,:,:1,:1])
 
         x = run_model_tf(inp)
-        infer_val = np.argmax(x)
-        print("Inferred value:", infer_val)
-        print("Digit probabilities:", x)
+        #infer_val = np.argmax(x)
+        #print("Inferred value:", infer_val)
+        #print("Digit probabilities:", x)
+        print(x[0,:,:1,:1])
 
         #print("---------")
         #iix = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
