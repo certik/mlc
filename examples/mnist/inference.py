@@ -140,7 +140,7 @@ def run_model_pt(inp,
 
 def run_model_tf(inp):
     tf_model = keras.models.load_model("y4")
-    tf_model = keras.models.Sequential(tf_model.layers[:3])
+    tf_model = keras.models.Sequential(tf_model.layers[:2])
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
@@ -201,7 +201,13 @@ def conv2d(in_channels, out_channels, kernel_size, weight, bias, x):
         out[c, :, :] = bias[c] + s
     return out
 
-def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
+def run_model_np(inp,
+        kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
+        batchnorm1_moving_mean,
+            batchnorm1_moving_variance,
+        batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
+            batchnorm2_moving_variance,
+        dense_w, dense_b):
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     inp_ = np.expand_dims(inp, 0)
@@ -209,10 +215,18 @@ def run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b):
 
     # Conv2D
     # (C_out, C_in, H, W)
-    out = conv2d(1, 32, 3, kernel1, bias1, out)
+    out = conv2d(1, 32, 5, kernel1, bias1, out)
 
     # ReLU
     out = relu(out)
+
+    # (C_out, C_in, H, W)
+    out = conv2d(32, 32, 5, kernel2, bias2, out)
+
+    # ReLU
+    out = relu(out)
+
+    return out
 
     # MaxPool2D
     out = max_pool_2d(out)
@@ -283,17 +297,17 @@ def main():
         draw_digit(inp)
         print("Reference value:", y_test[i])
 
-        x = run_model_pt(inp,
-                kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
-                batchnorm1_moving_mean,
-                    batchnorm1_moving_variance,
-                batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
-                    batchnorm2_moving_variance,
-                dense_w, dense_b)
+        #x = run_model_pt(inp,
+        #        kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
+        #        batchnorm1_moving_mean,
+        #            batchnorm1_moving_variance,
+        #        batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
+        #            batchnorm2_moving_variance,
+        #        dense_w, dense_b)
         #infer_val = np.argmax(x)
         #print("Inferred value:", infer_val)
         #print("Digit probabilities:", x)
-        print(x[0,:,:1,:1])
+        #print(x[0,:,:1,:1])
 
         x = run_model_tf(inp)
         #infer_val = np.argmax(x)
@@ -302,7 +316,14 @@ def main():
         print(x[0,:,:1,:1])
 
         #print("---------")
-        #iix = run_model_np(inp, kernel1, bias1, kernel2, bias2, dense_w, dense_b)
+        x = run_model_np(inp,
+                kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
+                batchnorm1_moving_mean,
+                    batchnorm1_moving_variance,
+                batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
+                    batchnorm2_moving_variance,
+                dense_w, dense_b)
+        print(x[:,:1,:1])
         #infer_val = np.argmax(x)
         #print("NumPy Inferred value:", infer_val)
         #print("NumPy Digit probabilities:", x)
