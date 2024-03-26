@@ -140,7 +140,7 @@ def run_model_pt(inp,
 
 def run_model_tf(inp):
     tf_model = keras.models.load_model("y4")
-    tf_model = keras.models.Sequential(tf_model.layers[:4])
+    tf_model = keras.models.Sequential(tf_model.layers[:8])
     print("Input shape:", inp.shape)
     assert inp.shape == (28, 28)
     out_tf = tf_model(np.expand_dims(np.expand_dims(inp, 0), -1))
@@ -217,7 +217,7 @@ def run_model_np(inp,
         kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
         batchnorm1_moving_mean,
             batchnorm1_moving_variance,
-        batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
+        batchnorm2_moving_mean,
             batchnorm2_moving_variance,
         dense_w, dense_b):
     print("Input shape:", inp.shape)
@@ -228,20 +228,30 @@ def run_model_np(inp,
     # Conv2D
     # (C_out, C_in, H, W)
     out = conv2d(1, 32, 5, kernel1, bias1, out)
-
     # ReLU
     out = relu(out)
-
     # (C_out, C_in, H, W)
     out = conv2d(32, 32, 5, kernel2, bias2, out)
-
     # ReLU
     out = relu(out)
-
     # BatchNorm2D
     out = batch_norm_2d(32, batchnorm1_moving_mean, batchnorm1_moving_variance,
             out, eps=0.001, momentum=0.01)
+    # MaxPool2D
+    out = max_pool_2d(out)
 
+    # Conv2D
+    # (C_out, C_in, H, W)
+    out = conv2d(32, 64, 3, kernel3, bias3, out)
+    # ReLU
+    out = relu(out)
+    # (C_out, C_in, H, W)
+    out = conv2d(64, 64, 3, kernel4, bias4, out)
+    # ReLU
+    out = relu(out)
+    # BatchNorm2D
+    out = batch_norm_2d(64, batchnorm2_moving_mean, batchnorm2_moving_variance,
+            out, eps=0.001, momentum=0.01)
     # MaxPool2D
     out = max_pool_2d(out)
 
@@ -296,14 +306,14 @@ def main():
     bias3 = gguf_to_array(g.tensors[7], "bias3")
     kernel4 = gguf_to_array(g.tensors[8], "kernel4")
     bias4 = gguf_to_array(g.tensors[9], "bias4")
-    batchnorm2_gamma = gguf_to_array(g.tensors[10], "batchnorm2_gamma")
-    batchnorm2_beta = gguf_to_array(g.tensors[11], "batchnorm2_beta")
-    batchnorm2_moving_mean = gguf_to_array(g.tensors[12],
+    #batchnorm2_gamma = gguf_to_array(g.tensors[10], "batchnorm2_gamma")
+    #batchnorm2_beta = gguf_to_array(g.tensors[11], "batchnorm2_beta")
+    batchnorm2_moving_mean = gguf_to_array(g.tensors[10],
             "batchnorm2_moving_mean")
-    batchnorm2_moving_variance = gguf_to_array(g.tensors[13],
+    batchnorm2_moving_variance = gguf_to_array(g.tensors[11],
             "batchnorm2_moving_variance")
-    dense_w = gguf_to_array(g.tensors[14], "dense_w")
-    dense_b = gguf_to_array(g.tensors[15], "dense_b")
+    dense_w = gguf_to_array(g.tensors[12], "dense_w")
+    dense_b = gguf_to_array(g.tensors[13], "dense_b")
     print("    Done.")
 
     for iter in range(N_iter):
@@ -336,7 +346,7 @@ def main():
                 kernel1, bias1, kernel2, bias2, kernel3, bias3, kernel4, bias4,
                 batchnorm1_moving_mean,
                     batchnorm1_moving_variance,
-                batchnorm2_gamma, batchnorm2_beta, batchnorm2_moving_mean,
+                batchnorm2_moving_mean,
                     batchnorm2_moving_variance,
                 dense_w, dense_b)
         print(x[:,:1,:1])
