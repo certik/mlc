@@ -61,23 +61,32 @@ int main() {
 
     // Read the model file
     struct gguf_context ctx;
-    r = gguf_read("../examples/mnist/mnist-cnn-model.gguf", &ctx);
+    r = gguf_read("../examples/mnist/mnist-cnn-beautiful-model.gguf", &ctx);
     if (r != 0) {
         printf("GGUF file not read; return code = %d\n", r);
         return r;
     }
-    // (32, 1, 3, 3) -- row major, C-order, (C_out, C_in, H, W)
     f32 *kernel1 = (f32*) (ctx.data + ctx.infos[0].offset);
-    // (32,)
     f32 *bias1 = (f32*) (ctx.data + ctx.infos[1].offset);
-    // (64, 32, 3, 3)
     f32 *kernel2 = (f32*) (ctx.data + ctx.infos[2].offset);
-    // (64,)
     f32 *bias2 = (f32*) (ctx.data + ctx.infos[3].offset);
-    // (10, 1600)
-    f32 *dense_w = (f32*) (ctx.data + ctx.infos[4].offset);
-    // (10,)
-    f32 *dense_b = (f32*) (ctx.data + ctx.infos[5].offset);
+    f32 *batchnorm1_gamma = (f32*) (ctx.data + ctx.infos[4].offset);
+    f32 *batchnorm1_beta = (f32*) (ctx.data + ctx.infos[5].offset);
+    f32 *batchnorm1_moving_mean = (f32*) (ctx.data + ctx.infos[6].offset);
+    f32 *batchnorm1_moving_variance = (f32*) (ctx.data + ctx.infos[7].offset);
+
+    f32 *kernel3 = (f32*) (ctx.data + ctx.infos[8].offset);
+    f32 *bias3 = (f32*) (ctx.data + ctx.infos[9].offset);
+    f32 *kernel4 = (f32*) (ctx.data + ctx.infos[10].offset);
+    f32 *bias4 = (f32*) (ctx.data + ctx.infos[11].offset);
+    f32 *batchnorm2_gamma = (f32*) (ctx.data + ctx.infos[12].offset);
+    f32 *batchnorm2_beta = (f32*) (ctx.data + ctx.infos[13].offset);
+    f32 *batchnorm2_moving_mean = (f32*) (ctx.data + ctx.infos[14].offset);
+    f32 *batchnorm2_moving_variance = (f32*) (ctx.data + ctx.infos[15].offset);
+
+    f32 *dense_w = (f32*) (ctx.data + ctx.infos[16].offset);
+    f32 *dense_b = (f32*) (ctx.data + ctx.infos[17].offset);
+
 
     for (int digit_idx_i=0; digit_idx_i < 11; digit_idx_i++) {
         int digit_idx = 4213 + digit_idx_i;
@@ -91,8 +100,12 @@ int main() {
         f32 *out = malloc(10*sizeof(f32));
 
         inference(in, out,
-                kernel1, bias1,
-                kernel2, bias2,
+                kernel1, bias1, kernel2, bias2,
+                batchnorm1_gamma, batchnorm1_beta,
+                batchnorm1_moving_mean, batchnorm1_moving_variance,
+                kernel3, bias3, kernel4, bias4,
+                batchnorm2_gamma, batchnorm2_beta,
+                batchnorm2_moving_mean, batchnorm2_moving_variance,
                 dense_w, dense_b);
 
         printf("Digit probabilities:\n");
