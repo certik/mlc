@@ -54,14 +54,20 @@ ll = Inference(
             relu(32, 24, 24, "tmp1", "tmp2"), # (32, 24, 24)
             conv2d(32, 32, 5, 24, 24, "kernel2", None, "tmp2", "tmp3"), # (32, 20, 20)
             relu(32, 20, 20, "tmp3", "tmp4"), # (32, 20, 20)
-            batch_norm_2d(32, 20, 20, "tmp4", "tmp5"), # (32, 20, 20)
+            batch_norm_2d(32, 20, 20, "tmp4", "tmp5",
+                "batchnorm1_gamma", "batchnorm1_beta",
+                "batchnorm2_moving_mean", "batchnorm2_moving_variance"
+                          ), # (32, 20, 20)
             max_pool_2d(32, 20, 20, "tmp5", "tmp6"), # (32, 10, 10)
 
             conv2d(32, 64, 3, 10, 10, "kernel3", None, "tmp6", "tmp7"), # (64, 8, 8)
             relu(64, 8, 8, "tmp7", "tmp8"), # (64, 8, 8)
             conv2d(64, 64, 3, 8, 8, "kernel4", None, "tmp8", "tmp9"), # (64, 6, 6)
             relu(64, 6, 6, "tmp9", "tmp10"), # (64, 6, 6)
-            batch_norm_2d(64, 6, 6, "tmp10", "tmp11"), # (64, 6, 6)
+            batch_norm_2d(64, 6, 6, "tmp10", "tmp11",
+                "batchnorm1_gamma", "batchnorm1_beta",
+                "batchnorm2_moving_mean", "batchnorm2_moving_variance"
+                ), # (64, 6, 6)
             max_pool_2d(64, 6, 6, "tmp11", "tmp12"), # (64, 3, 3)
 
             saxpy(10, 576, "dense_w", None, "tmp12", "tmp13"), # (10)

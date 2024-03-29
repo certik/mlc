@@ -74,8 +74,12 @@ void max_pool_2d_f16(int in_channels, int in_h, int in_w,
                  f16 *out // (in_channels, in_h/2, in_w/2)
         );
 void batch_norm_2d(int in_channels, int in_h, int in_w,
-        const f32 *x,
-        f32 *out
+                 const f32 *x, // (in_channels, in_h, in_w)
+                 f32 *out, // (in_channels, in_h, in_w)
+                 f32 *gamma, // (in_channels)
+                 f32 *beta, // (in_channels)
+                 f32 *moving_mean, // (in_channels)
+                 f32 *moving_variance // (in_channels)
         );
 // out = matmul(A, x) + y
 void saxpy(int m, int n,

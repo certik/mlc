@@ -108,6 +108,10 @@ class batch_norm_2d(Instruction):
     W: int
     x_in: str
     x_out: str
+    gamma: str
+    beta: str
+    moving_mean: str
+    moving_variance: str
 
 @dataclass
 class reshape(Instruction):

@@ -220,7 +220,11 @@ void inference_calculation(
         self.inf_body += f"""\
     batch_norm_2d({x.in_channels}, {x.H}, {x.W},
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
-        {x.x_out} // {self.tmpinout[x.x_out].shape}
+        {x.x_out}, // {self.tmpinout[x.x_out].shape}
+        {x.gamma}, // {self.weights[x.gamma].shape}
+        {x.beta}, // {self.weights[x.beta].shape}
+        {x.moving_mean}, // {self.weights[x.moving_mean].shape}
+        {x.moving_variance} // {self.weights[x.moving_variance].shape}
     );
 """
 
