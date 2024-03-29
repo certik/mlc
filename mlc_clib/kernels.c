@@ -372,7 +372,16 @@ void batch_norm_2d(int in_channels, int in_h, int in_w,
                  f32 *moving_mean, // (in_channels)
                  f32 *moving_variance // (in_channels)
 ) {
-    // Not implemented yet.
+    f32 eps = 0.001;
+    for (int c = 0; c < in_channels; c++) {
+        for (int i = 0; i < in_h; i++) {
+            for (int j = 0; j < in_w; j++) {
+                out[I3(in_channels, in_h, in_w, c, i, j)] =
+                    ((x[I3(in_channels, in_h, in_w, c, i, j)] - moving_mean[c])
+                    / sqrt(moving_variance[c] + eps)) * gamma[c] + beta[c];
+            }
+        }
+    }
 }
 
 // out = matmul(A, x) + y
