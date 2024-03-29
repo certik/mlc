@@ -76,5 +76,5 @@ ll = Inference(
     )
 
 cpu_c, cpu_h = ll_to_cpu(ll)
-open("inference-generated.c", "w").write(cpu_c)
-open("inference-generated.h", "w").write(cpu_h)
+open("inference-generated2.c", "w").write(cpu_c)
+open("inference-generated2.h", "w").write(cpu_h)

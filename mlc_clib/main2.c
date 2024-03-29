@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "inference-generated.h"
+#include "inference-generated2.h"
 #include "kernels.h"
 #include "display.h"
 #include "gguf.h"
