@@ -68,7 +68,7 @@ void conv2d_kernel(int kernel_size, int in_h, int in_w,
             for (int i = 0; i < kernel_size; i++) {
                 for (int j = 0; j < kernel_size; j++) {
                     out[I2(out_h, out_w, h, w)]
-                        += weight[I2(3, 3, i, j)]
+                        += weight[I2(kernel_size, kernel_size, i, j)]
                         * x[I2(in_h, in_w, h + i, w + j)];
                 }
             }
@@ -130,7 +130,8 @@ void conv2d(int in_channels, int out_channels, int kernel_size,
         }
         for (int k = 0; k < in_channels; k++) {
             conv2d_kernel(kernel_size, in_h, in_w,
-                          &weight[I4(out_channels, in_channels, 3, 3, c, k, 0, 0)],
+                          &weight[I4(out_channels, in_channels,
+                              kernel_size, kernel_size, c, k, 0, 0)],
                           &x[I3(in_channels, in_h, in_w, k, 0, 0)],
                           s);
         }
