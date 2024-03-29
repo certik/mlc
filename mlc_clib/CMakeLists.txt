@@ -12,3 +12,13 @@ add_executable(mlc_clib
 )
 
 target_link_libraries(mlc_clib m)
+
+add_executable(mlc_clib2
+    main2.c
+    kernels.c
+    gguf.c
+    display.c
+    inference-generated2.c
+)
+
+target_link_libraries(mlc_clib2 m)

@@ -91,6 +91,7 @@ jobs:
         run: |
             cd mlc_clib
             python generate.py
+            python generate2.py
             CC=clang cmake .
             make
             ./mlc_clib
@@ -101,6 +102,7 @@ jobs:
         run: |
             cd mlc_clib
             python generate_f16.py
+            python generate2.py
             CC=clang cmake .
             make
             ./mlc_clib
@@ -154,6 +156,7 @@ jobs:
         run: |
             cd mlc_clib
             python generate.py
+            python generate2.py
             CC=clang cmake .
             make
             ./mlc_clib
@@ -164,6 +167,7 @@ jobs:
         run: |
             cd mlc_clib
             python generate_f16.py
+            python generate2.py
             CC=clang cmake .
             make
             ./mlc_clib
@@ -253,3 +257,14 @@ jobs:
         run: |
             cd examples/mnist
             python inference2_np.py
+
+      - name: Run C inference Test 1
+        shell: bash -e -x -l {0}
+        run: |
+            cd mlc_clib
+            python generate.py
+            python generate2.py
+            CC=clang cmake .
+            make
+            ./mlc_clib2
+            git clean -dfx

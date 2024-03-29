@@ -32,7 +32,8 @@ def convert_LL_type2(t):
 
 class LLToCPUVisitor:
 
-    def __init__(self):
+    def __init__(self, filename):
+        self.filename = filename
         self.src = ""
         self.indent = " "*4
         self.instructions = []
@@ -107,7 +108,7 @@ class LLToCPUVisitor:
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "inference-generated.h"
+#include "{self.filename}.h"
 #include "kernels.h"
 
 void inference_calculation(
@@ -220,7 +221,11 @@ void inference_calculation(
         self.inf_body += f"""\
     batch_norm_2d({x.in_channels}, {x.H}, {x.W},
         {x.x_in}, // {self.tmpinout[x.x_in].shape}
-        {x.x_out} // {self.tmpinout[x.x_out].shape}
+        {x.x_out}, // {self.tmpinout[x.x_out].shape}
+        {x.gamma}, // {self.weights[x.gamma].shape}
+        {x.beta}, // {self.weights[x.beta].shape}
+        {x.moving_mean}, // {self.weights[x.moving_mean].shape}
+        {x.moving_variance} // {self.weights[x.moving_variance].shape}
     );
 """
 
@@ -326,7 +331,7 @@ void inference_calculation(
     );
 """
 
-def ll_to_cpu(ll: Inference):
-    v = LLToCPUVisitor()
+def ll_to_cpu(ll: Inference, filename: str):
+    v = LLToCPUVisitor(filename)
     v.visit_Inference(ll)
     return v.cpu_c, v.cpu_h
