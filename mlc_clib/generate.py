@@ -70,7 +70,7 @@ ll = Inference(
                 ), # (64, 6, 6)
             max_pool_2d(64, 6, 6, "tmp11", "tmp12"), # (64, 3, 3)
 
-            saxpy(10, 576, "dense_w", None, "tmp12", "tmp13"), # (10)
+            saxpy(10, 576, "dense_w", "dense_b", "tmp12", "tmp13"), # (10)
             softmax(10, "tmp13", "out"), # (10)
         ]
     )
