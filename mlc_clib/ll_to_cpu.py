@@ -32,7 +32,8 @@ def convert_LL_type2(t):
 
 class LLToCPUVisitor:
 
-    def __init__(self):
+    def __init__(self, filename):
+        self.filename = filename
         self.src = ""
         self.indent = " "*4
         self.instructions = []
@@ -107,7 +108,7 @@ class LLToCPUVisitor:
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "inference-generated.h"
+#include "{self.filename}.h"
 #include "kernels.h"
 
 void inference_calculation(
@@ -330,7 +331,7 @@ void inference_calculation(
     );
 """
 
-def ll_to_cpu(ll: Inference):
-    v = LLToCPUVisitor()
+def ll_to_cpu(ll: Inference, filename: str):
+    v = LLToCPUVisitor(filename)
     v.visit_Inference(ll)
     return v.cpu_c, v.cpu_h
